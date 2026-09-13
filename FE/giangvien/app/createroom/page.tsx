@@ -3,11 +3,22 @@
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react"; // npm install qrcode.react
 import styles from "./create.module.css";
-import { generateUniqueClassCode, generateQrPayload } from "./classCodeGenerator";
-import { Home, Plus, BookOpen, BarChart2, Settings, RefreshCw,MessageSquare,FileText } from "lucide-react";
-import Link from 'next/link';
+import {
+  generateUniqueClassCode,
+  generateQrPayload,
+} from "";
+import {
+  Home,
+  Plus,
+  BookOpen,
+  BarChart2,
+  Settings,
+  RefreshCw,
+  MessageSquare,
+  FileText,
+} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 
 // TODO: lấy danh sách mã lớp đang có thật từ database khi tích hợp API,
 // để đảm bảo mã mới sinh ra không trùng với bất kỳ lớp nào.
@@ -54,10 +65,10 @@ export default function CreateClass() {
           </Link>
         </div>
         <nav className={styles.nav}>
-          <link href="/home" className={styles.navItem}>
+          <button className={styles.navItem}>
             <Home size={18} />
             <span>Home</span>
-            </link>
+          </button>
           <button className={styles.navItem}>
             <BookOpen size={18} />
             <span>My class</span>
@@ -105,7 +116,12 @@ export default function CreateClass() {
             Mã lớp <span className={styles.required}>*</span>
           </label>
           <div className={styles.codeRow}>
-            <input type="text" className={styles.input} value={classCode} readOnly />
+            <input
+              type="text"
+              className={styles.input}
+              value={classCode}
+              readOnly
+            />
             <button
               type="button"
               className={styles.regenerateBtn}
@@ -116,7 +132,8 @@ export default function CreateClass() {
             </button>
           </div>
           <p className={styles.helperText}>
-            Mã này do hệ thống tự sinh và đảm bảo không trùng với bất kỳ lớp nào khác.
+            Mã này do hệ thống tự sinh và đảm bảo không trùng với bất kỳ lớp nào
+            khác.
           </p>
 
           {/* Thời gian */}
@@ -167,12 +184,13 @@ export default function CreateClass() {
                 <p className={styles.infoLabel}>
                   Mã lớp: <span className={styles.infoCode}>{classCode}</span>
                 </p>
-                <p className={styles.infoHint}>Chia sẻ mã QR hoặc mã lớp cho sinh viên</p>
+                <p className={styles.infoHint}>
+                  Chia sẻ mã QR hoặc mã lớp cho sinh viên
+                </p>
               </div>
 
               <div className={styles.qrWrap}>
                 <QRCodeSVG value={generateQrPayload(classCode)} size={80} />
-                
               </div>
             </div>
           </div>

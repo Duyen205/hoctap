@@ -27,7 +27,8 @@ import {
   Mic,
   Monitor,
   Users,
-  Hash,ArrowLeftIcon
+  Hash,
+  ArrowLeftIcon
 } from "lucide-react";
 // Kiểu dữ liệu 1 lớp học
 type ClassItem = {
@@ -65,6 +66,7 @@ export default function StudentDashboard() {
     // TODO: gửi codeInput lên server để kiểm tra và tham gia lớp thật
     console.log("Tham gia lớp bằng mã:", codeInput.trim());
   }
+  
 
   // ================== MÀN HÌNH: QUÉT MÃ QR ==================
   if (screen === "scanQr") {

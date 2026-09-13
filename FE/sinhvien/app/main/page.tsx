@@ -70,11 +70,9 @@ export default function StudentDashboard() {
 
   function handleJoinByCode() {
     if (!classCodeInput.trim() || !nameInput.trim()) return;
-    // TODO: gửi classCodeInput + nameInput lên server để kiểm tra và tham gia lớp thật
     console.log("Tham gia lớp:", { code: classCodeInput.trim(), name: nameInput.trim() });
   }
 
-  // ================== MÀN HÌNH: QUÉT MÃ QR (giống ảnh 1) ==================
   if (joinScreen === "scanQr") {
     return (
       <div className={styles.page}>
@@ -196,11 +194,11 @@ export default function StudentDashboard() {
           </button>
           <button className={styles.navItem}>
             <BookOpen size={18} />
-            <span>My class</span>
+            <span>My lessons</span>
           </button>
           <button className={styles.navItem}>
             <MessageSquare size={18} />
-            <span>Question center</span>
+            <span>Question grouping</span>
           </button>
           <button className={styles.navItem}>
             <FileText size={18} />

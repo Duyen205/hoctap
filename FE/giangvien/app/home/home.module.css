@@ -1,16 +1,16 @@
-/* Bảng màu nền tối theo mã màu bạn cung cấp (#070b1c) */
 .page {
   --bg: #070b1c;
   --surface: #10162c;
   --surface-hover: #171f3a;
   --border: rgba(255, 255, 255, 0.08);
   --text: #f2f4fa;
-  --text-muted: #aab0c4; /* làm tối hơn 1 chút so với --text để phân biệt cấp độ chữ */
+  --text-muted: #aab0c4;
   --text-faint: #7c8296;
   --accent: #2f6fed;
   --accent-soft: rgba(47, 111, 237, 0.16);
   --success: #22c55e;
   --success-soft: rgba(34, 197, 94, 0.14);
+  --danger: #ef4444;
 
   display: flex;
   min-height: 100vh;
@@ -19,9 +19,12 @@
   color: var(--text);
 }
 
-/* ---------- Sidebar ---------- */
+/* =========================================================
+   1. SIDEBAR
+   ========================================================= */
 .sidebar {
   width: 230px;
+  flex-shrink: 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
   padding: 20px;
@@ -33,10 +36,14 @@
   padding: 0 8px 24px;
 }
 
+.logoLink {
+  text-decoration: none;
+}
+
 .logoText {
   display: flex;
   align-items: center;
-
+  gap: 8px;
   font-size: 20px;
   font-weight: bold;
   color: var(--text);
@@ -67,7 +74,7 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--text-muted);
+  color: white;
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
@@ -82,10 +89,10 @@
   color: #ffffff;
 }
 
-/* ---------- Main content ---------- */
-.main {
+.contentArea {
   flex: 1;
   padding: 24px 40px;
+  min-width: 0;
 }
 
 .topbar {
@@ -93,7 +100,7 @@
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .bellButton {
@@ -122,52 +129,31 @@
   font-weight: bold;
 }
 
-/* ---------- Lời chào ---------- */
-.greetingTitle {
-  font-size: 22px;
-  color: var(--text);
-  margin: 0 0 6px;
-}
-
-.greetingSubtitle {
-  color: var(--text-muted);
-  margin: 0 0 20px;
-  font-size: 14px;
-}
-
 .sectionTitle {
   font-size: 16px;
   font-weight: bold;
-  color: var(--text);
+  color: white;
   margin: 0;
 }
 
-/* ---------- Nút tạo lớp học ---------- */
-.createClassBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--accent);
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: bold;
-  font-family: inherit;
-  cursor: pointer;
-  margin-bottom: 28px;
+/* 2 khung đặt cạnh nhau */
+.twoColumn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
 }
 
-.createClassBtn:hover {
-  filter: brightness(1.08);
+@media (max-width: 900px) {
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* ---------- Khối danh sách lớp học ---------- */
 .classBox {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 20px;
 }
 
@@ -175,6 +161,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .viewAll {
@@ -183,37 +170,15 @@
   text-decoration: none;
 }
 
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0 16px;
-}
-
-.tab {
-  border: none;
-  background: var(--surface-hover);
-  color: var(--text-muted);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.tabActive {
-  background: var(--accent);
-  color: #fff;
-}
-
 .emptyText {
   color: var(--text-faint);
   font-size: 14px;
   text-align: center;
-  padding: 20px 0;
+  padding: 28px 0;
 }
 
-/* ---------- Thẻ lớp học ---------- */
 .classCard {
+  position: relative;
   padding: 16px 0;
   border-top: 1px solid var(--border);
 }
@@ -243,6 +208,7 @@
 
 .classInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .classTitle {
@@ -275,7 +241,6 @@
   color: var(--accent);
 }
 
-/* ---------- Thống kê nhỏ trong thẻ lớp (Sinh viên / Nhóm câu hỏi) ---------- */
 .classStats {
   display: flex;
   gap: 12px;
@@ -297,5 +262,270 @@
 
 .statLabel {
   font-size: 12px;
+  color: white;
+}
+
+.classActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.actionBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.actionBtnDanger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.formCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px 24px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  color: white;
+  margin: 16px 0 6px;
+}
+
+.required {
+  color: var(--danger);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  color-scheme: dark;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.codeRow {
+  display: flex;
+  gap: 8px;
+}
+
+.codeRow .input {
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.regenerateBtn {
+  flex-shrink: 0;
+  width: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.regenerateBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.helperText {
+  font-size: 12px;
   color: var(--text-faint);
+  margin: 6px 0 0;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeDash {
+  color: var(--text-muted);
+}
+
+.createBtn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 24px;
+}
+
+.createBtn:hover {
+  filter: brightness(1.08);
+}
+
+/* =========================================================
+   KẾT QUẢ TẠO LỚP — hiển thị NGAY TRONG khung "Tạo lớp học" bên phải
+   ========================================================= */
+.resultInlineSubtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+
+.inlineResultCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* QR to, dễ quét từ xa dù nằm trong khung hẹp hơn */
+.bigQrWrap {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+.bigCodeLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.bigCodeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.bigCode {
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--text);
+}
+.questionPanel {
+  margin-top: 20px;
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.questionPanel h3 {
+  color: white;
+  font-size: 18px;
+  margin: 0;
+}
+
+.questionInput {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.sendQuestionBtn {
+  align-self: flex-end;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sendQuestionBtn:hover {
+  background: #1d4ed8;
+}
+
+.toolBtnActive {
+  background: #2563eb;
+  color: white;
+}
+.linkRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.linkText {
+  font-size: 14px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyIconBtn {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.copyIconBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
