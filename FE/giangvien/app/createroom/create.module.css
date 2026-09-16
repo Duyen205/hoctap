@@ -1,6 +1,6 @@
 .page {
-  --bg: #070b1c;
-  --surface: #10162c;
+  --bg: #ffffff;
+  --surface: #ffffff;
   --surface-hover: #171f3a;
   --border: rgba(255, 255, 255, 0.08);
   --text: #f2f4fa;
@@ -13,7 +13,8 @@
   display: flex;
   min-height: 100vh;
   background: var(--bg);
-  font-family: ligatures;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-variant-ligatures: common-ligatures;
   color: var(--text);
 }
 
@@ -51,6 +52,7 @@
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .navItem:hover {

@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react"; // npm install qrcode.react
 import styles from "./create.module.css";
 import {
   generateUniqueClassCode,
   generateQrPayload,
-} from "";
+} from "../home/classCodeGenerator";
 import {
   Home,
-  Plus,
   BookOpen,
   BarChart2,
   Settings,
@@ -18,7 +17,6 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 // TODO: lấy danh sách mã lớp đang có thật từ database khi tích hợp API,
 // để đảm bảo mã mới sinh ra không trùng với bất kỳ lớp nào.
@@ -30,12 +28,9 @@ export default function CreateClass() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const router = useRouter();
-  const [classCode, setClassCode] = useState("");
-
-  useEffect(() => {
-    setClassCode(generateUniqueClassCode(existingClassCodes));
-  }, []);
+  const [classCode, setClassCode] = useState(() =>
+    generateUniqueClassCode(existingClassCodes),
+  );
 
   function handleRegenerateCode() {
     setClassCode(generateUniqueClassCode(existingClassCodes));
@@ -65,31 +60,31 @@ export default function CreateClass() {
           </Link>
         </div>
         <nav className={styles.nav}>
-          <button className={styles.navItem}>
+          <Link href="/home" className={styles.navItem}>
             <Home size={18} />
             <span>Home</span>
-          </button>
-          <button className={styles.navItem}>
+          </Link>
+          <Link href="/home" className={styles.navItem}>
             <BookOpen size={18} />
             <span>My class</span>
-          </button>
-          <button className={styles.navItem}>
+          </Link>
+          <Link href="/question" className={styles.navItem}>
             <MessageSquare size={18} />
             <span>Question center</span>
-          </button>
-          <button className={styles.navItem}>
+          </Link>
+          <Link href="/createroom" className={styles.navItem}>
             <FileText size={18} />
             <span>Lesson Summary</span>
-          </button>
-          <button className={styles.navItem}>
+          </Link>
+          <Link href="/home" className={styles.navItem}>
             <BarChart2 size={18} />
             <span>Report</span>
-          </button>
+          </Link>
           <div className={styles.sidebarDivider}>
-            <button className={styles.navItem}>
+            <Link href="/home" className={styles.navItem}>
               <Settings size={18} />
               <span>Setting</span>
-            </button>
+            </Link>
           </div>
         </nav>
       </aside>

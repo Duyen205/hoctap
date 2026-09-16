@@ -7,8 +7,13 @@ import Link from "next/link";
 import {
   Home,
   BookOpen,
-  BarChart2,
+  Radio,
+  LayoutGrid,
+  Users,
+  CalendarClock,
   Settings,
+  ChevronRight,
+  LayoutDashboard,
   Plus,
   Bell,
   RefreshCw,
@@ -17,10 +22,13 @@ import {
   UserPlus,
   Pencil,
   Trash2,
-  MessageSquare,
-  FileText
 } from "lucide-react";
-import { generateUniqueClassCode, generateQrPayload } from "./classCodeGenerator";
+import ClassManagementPage from "../question/classmanagement/page";
+import TeacherQuestionGroupsPage from "../question/question-group/page";
+import {
+  generateUniqueClassCode,
+  generateQrPayload,
+} from "./classCodeGenerator";
 
 // Đổi thành domain thật khi triển khai
 const APP_BASE_URL = "https://classbridge.app";
@@ -48,11 +56,15 @@ const existingClassCodes: string[] = [];
 type RightPanelView = "create" | "result";
 
 export default function TeacherHome() {
+  const [isQuestionMenuOpen, setIsQuestionMenuOpen] = useState(false);
+  const [showClassManagement, setShowClassManagement] = useState(false);
+  const [showQuestionGroups, setShowQuestionGroups] = useState(false);
   // Danh sách lớp học — lưu trong state để lớp mới tạo hiện ngay lên danh sách
   const [classesList, setClassesList] = useState<ClassItem[]>(initialClasses);
 
   // Khung phải: tạo lớp hay hiển thị kết quả
-  const [rightPanelView, setRightPanelView] = useState<RightPanelView>("create");
+  const [rightPanelView, setRightPanelView] =
+    useState<RightPanelView>("create");
 
   // ----- Form tạo lớp học -----
   const [subjectName, setSubjectName] = useState("");
@@ -60,7 +72,9 @@ export default function TeacherHome() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [classCode, setClassCode] = useState(() => generateUniqueClassCode(existingClassCodes));
+  const [classCode, setClassCode] = useState(() =>
+    generateUniqueClassCode(existingClassCodes),
+  );
   const [copied, setCopied] = useState<"code" | "link" | null>(null);
 
   const joinLink = `${APP_BASE_URL}/join/${classCode}`;
@@ -132,7 +146,7 @@ export default function TeacherHome() {
       {/* 1. Sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.logoArea}>
-          <Link href="/home" className={styles.logoLink}>
+          <Link href="/" className={styles.logoLink}>
             <span className={styles.logoText}>
               <img src="/Ai.png" alt="Logo" /> ClassBridge
             </span>
@@ -140,36 +154,84 @@ export default function TeacherHome() {
         </div>
 
         <nav className={styles.nav}>
-          <button className={styles.navItem}>
+          <Link
+            href="/home"
+            className={`${styles.navItem} ${styles.navItemActive}`}
+          >
             <Home size={18} />
             <span>Home</span>
-          </button>
-          <button className={styles.navItem}>
-            <BookOpen size={18} />
-            <span>My lessons</span>
-          </button>
-          <button className={styles.navItem}>
-            <MessageSquare size={18} />
-            <span>Question grouping</span>
-          </button>
-          <button className={styles.navItem}>
-            <FileText size={18} />
-            <span>Class management</span>
-          </button>
-          <button className={styles.navItem}>
-            <BarChart2 size={18} />
-            <span>Dashboard</span>
-          </button>
-          <div className={styles.sidebarDivider}>
-            <button className={styles.navItem}>
-              <Settings size={18} />
-              <span>Setting</span>
+          </Link>
+          <Link href="/room" className={styles.navItem}>
+            <Radio size={18} />
+            <span>Live Session</span>
+          </Link>
+          <div className={styles.navGroup}>
+            <button
+              type="button"
+              className={styles.navItem}
+              onClick={() => setIsQuestionMenuOpen((prev) => !prev)}
+            >
+              <LayoutGrid size={18} />
+              <span>Question grouping</span>
+              <ChevronRight
+                size={16}
+                className={`${styles.navChevron} ${
+                  isQuestionMenuOpen ? styles.navChevronOpen : ""
+                }`}
+              />
             </button>
+            {isQuestionMenuOpen && (
+              <div className={styles.navChildren}>
+                <button
+                  type="button"
+                  className={styles.navItemChild}
+                  onClick={() => setShowClassManagement(true)}
+                >
+                  <span>Class management</span>
+                </button>
+                <button
+                  type="button"
+                  className={styles.navItemChild}
+                  onClick={() => setShowQuestionGroups(true)}
+                >
+                  <span>Gom câu hỏi</span>
+                </button>
+              </div>
+            )}
+          </div>
+          <Link href="/home" className={styles.navItem}>
+            <Users size={18} />
+            <span>Students</span>
+          </Link>
+          <Link href="/home" className={styles.navItem}>
+            <CalendarClock size={18} />
+            <span>Sessions</span>
+          </Link>
+          <Link href="/home" className={styles.navItem}>
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </Link>
+          <div className={styles.sidebarDivider}>
+            <Link href="/home" className={styles.navItem}>
+              <Settings size={18} />
+              <span>Settings</span>
+            </Link>
           </div>
         </nav>
       </aside>
 
       <div className={styles.contentArea}>
+        {showClassManagement && (
+          <div className={styles.mainOverlay}>
+            <ClassManagementPage embedded />
+          </div>
+        )}
+        {showQuestionGroups && (
+          <div className={styles.mainOverlay}>
+            <TeacherQuestionGroupsPage embedded />
+          </div>
+        )}
+
         {/* Thanh trên cùng */}
         <div className={styles.topbar}>
           <button className={styles.bellButton}>
@@ -209,7 +271,11 @@ export default function TeacherHome() {
                   </div>
 
                   <span
-                    className={c.status === "ongoing" ? styles.statusOngoing : styles.statusUpcoming}
+                    className={
+                      c.status === "ongoing"
+                        ? styles.statusOngoing
+                        : styles.statusUpcoming
+                    }
                   >
                     {c.status === "ongoing" ? "Đang diễn ra" : "Sắp diễn ra"}
                   </span>
@@ -257,7 +323,6 @@ export default function TeacherHome() {
             {rightPanelView === "create" ? (
               <>
                 <h2 className={styles.sectionTitle}>Tạo lớp học mới</h2>
-
                 <label className={styles.label}>
                   Tên môn học <span className={styles.required}>*</span>
                 </label>
@@ -268,12 +333,16 @@ export default function TeacherHome() {
                   value={subjectName}
                   onChange={(e) => setSubjectName(e.target.value)}
                 />
-
                 <label className={styles.label}>
                   Mã lớp <span className={styles.required}>*</span>
                 </label>
                 <div className={styles.codeRow}>
-                  <input type="text" className={styles.input} value={classCode} readOnly />
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={classCode}
+                    readOnly
+                  />
                   <button
                     type="button"
                     className={styles.regenerateBtn}
@@ -284,9 +353,9 @@ export default function TeacherHome() {
                   </button>
                 </div>
                 <p className={styles.helperText}>
-                  Mã này do hệ thống tự sinh và đảm bảo không trùng với bất kỳ lớp nào khác.
+                  Mã này do hệ thống tự sinh và đảm bảo không trùng với bất kỳ
+                  lớp nào khác.
                 </p>
-
                 <label className={styles.label}>
                   Thời gian <span className={styles.required}>*</span>
                 </label>
@@ -311,7 +380,6 @@ export default function TeacherHome() {
                     onChange={(e) => setEndTime(e.target.value)}
                   />
                 </div>
-
                 <label className={styles.label}>Mô tả (tùy chọn)</label>
                 <textarea
                   className={styles.textarea}
@@ -319,8 +387,10 @@ export default function TeacherHome() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
-
-                <button className={styles.createBtn} onClick={handleCreateClass}>
+                <button
+                  className={styles.createBtn}
+                  onClick={handleCreateClass}
+                >
                   Tạo lớp học
                 </button>
               </>
@@ -328,14 +398,16 @@ export default function TeacherHome() {
               <>
                 <h2 className={styles.sectionTitle}>Đã tạo lớp học</h2>
                 <p className={styles.resultInlineSubtitle}>
-                  Bạn hãy chia sẻ mã lớp, link hoặc mã QR này cho sinh viên để tham gia lớp học.
+                  Bạn hãy chia sẻ mã lớp, link hoặc mã QR này cho sinh viên để
+                  tham gia lớp học.
                 </p>
-
                 <div className={styles.inlineResultCenter}>
                   <div className={styles.bigQrWrap}>
-                    <QRCodeSVG value={generateQrPayload(classCode)} size={220} />
+                    <QRCodeSVG
+                      value={generateQrPayload(classCode)}
+                      size={220}
+                    />
                   </div>
-
                   <div className={styles.bigCodeLabel}>Mã lớp học</div>
                   <div className={styles.bigCodeRow}>
                     <span className={styles.bigCode}>{classCode}</span>
@@ -343,22 +415,31 @@ export default function TeacherHome() {
                       className={styles.copyIconBtn}
                       onClick={() => handleCopy(classCode, "code")}
                     >
-                      {copied === "code" ? <Check size={16} /> : <Copy size={16} />}
+                      {copied === "code" ? (
+                        <Check size={16} />
+                      ) : (
+                        <Copy size={16} />
+                      )}
                     </button>
                   </div>
-
                   <div className={styles.linkRow}>
                     <span className={styles.linkText}>{joinLink}</span>
                     <button
                       className={styles.copyIconBtn}
                       onClick={() => handleCopy(joinLink, "link")}
                     >
-                      {copied === "link" ? <Check size={16} /> : <Copy size={16} />}
+                      {copied === "link" ? (
+                        <Check size={16} />
+                      ) : (
+                        <Copy size={16} />
+                      )}
                     </button>
                   </div>
                 </div>
-
-                <button className={styles.createBtn} onClick={handleCreateAnother}>
+                <button
+                  className={styles.createBtn}
+                  onClick={handleCreateAnother}
+                >
                   Tạo lớp học khác
                 </button>
               </>

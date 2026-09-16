@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Mic,
   MicOff,
@@ -232,7 +231,7 @@ export default function ClassroomPage() {
   const handleLeave = () => {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    router.push("/");
+    window.location.assign("/home");
   };
 
   useEffect(() => {
@@ -559,40 +558,35 @@ export default function ClassroomPage() {
           <CircleHelp size={20} />
           <span>Câu hỏi</span>
         </button>
-        <button
-          className={styles.toolBtn}
-          onClick={() => setShowLeavePopup(true)}
-        >
-          <PhoneOff size={20} />
-          <span>Leave</span>
-        </button>
+        <div className={styles.leaveWrapper}>
+          <button
+            type="button"
+            className={styles.toolBtn}
+            onClick={() => setShowLeavePopup((prev) => !prev)}
+          >
+            <PhoneOff size={20} />
+            <span>Leave</span>
+          </button>
+          {showLeavePopup && (
+            <div className={styles.leaveMenu}>
+              <button
+                type="button"
+                className={styles.leaveMeetingBtn}
+                onClick={handleLeave}
+              >
+                Leave meeting
+              </button>
+              <button
+                type="button"
+                className={styles.cancelLeaveBtn}
+                onClick={() => setShowLeavePopup(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </footer>
-      <div className={styles.leaveWrapper}>
-        <button
-          className={styles.toolBtn}
-          onClick={() => setShowLeavePopup(!showLeavePopup)}
-        >
-          <PhoneOff size={20} />
-          <span>Leave</span>
-        </button>
-        {showLeavePopup && (
-          <div className={styles.leaveMenu}>
-            <Link
-              href="/main"
-              className={styles.leaveMeetingBtn}
-              onClick={handleLeave}
-            >
-              Leave meeting
-            </Link>
-            <button
-              className={styles.cancelLeaveBtn}
-              onClick={() => setShowLeavePopup(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

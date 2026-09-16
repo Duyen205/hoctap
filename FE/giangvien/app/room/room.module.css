@@ -5,11 +5,8 @@
   flex-direction: column;
   background-color: #060913;
   color: #ffffff;
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-variant-ligatures: common-ligatures;
   overflow: hidden;
 }
 
@@ -587,30 +584,21 @@
 
 .leaveMenu {
   position: absolute;
-  bottom: 130px; /* hiện phía trên nút */
-  left: 66%;
+  bottom: calc(100% + 12px);
+  left: 50%;
   transform: translateX(-50%);
-  width: 200px;
+  width: 180px;
   background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 12px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   z-index: 999;
 }
 
-.leaveMenu::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid #1e1e1e;
-}
 .leaveMeetingBtn {
   border: none;
   background: #ef2d2d;
@@ -631,6 +619,7 @@
   font-weight: 600;
   cursor: pointer;
 }
+
 .endMeetingBtn:hover {
   background: #d91d1d;
 }

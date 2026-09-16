@@ -12,7 +12,8 @@ body {
 .container {
   background-color: #070b1c;
   color: #cac3d8;
-  font-family: sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-variant-ligatures: common-ligatures;
   display: flex;
   align-items: center; /* Căn giữa theo chiều ngang (trái - phải) */
   justify-content: center; /* Căn giữa theo chiều dọc (trên - dưới) */

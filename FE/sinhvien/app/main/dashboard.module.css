@@ -1,31 +1,39 @@
-/* Bảng màu nền tối theo yêu cầu (#070b1c) */
 .page {
-  --bg: #070b1c;
-  --surface: #10162c;
-  --surface-hover: #171f3a;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #f2f4fa;
-  --text-muted: #f2f4fa;
-  --text-faint: #f2f4fa;
-  --accent: #2f6fed;
-  --accent-soft: rgba(47, 111, 237, 0.16);
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #eef3fb;
+  --border: #dbe3ef;
+  --text: #172033;
+  --text-muted: #62708a;
+  --text-faint: #8b98ad;
+  --accent: #2563eb;
+  --accent-soft: #e7efff;
   --success: #22c55e;
-  --success-soft: rgba(34, 197, 94, 0.14);
+  --success-soft: #e8f8ef;
 
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--bg);
-  font-family: ligatures;
+  font-family: var(--font-geist-sans), sans-serif;
   color: var(--text);
+}
+
+/* Hàng chứa Sidebar + Main, nằm dưới thanh topbar full-width */
+.body {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
 }
 
 /* ---------- Sidebar ---------- */
 .sidebar {
   width: 215px;
-  background: var(--surface);
+  flex-shrink: 0;
+  background: #ffffff;
   border-right: 1px solid var(--border);
   padding: 20px;
-  font-size: 24px;
 }
 
 .brand {
@@ -38,42 +46,43 @@
 .logoArea {
   display: flex;
   align-items: center;
-  padding: 0 8px 24px;
 }
 
 .logoText {
   display: flex;
   align-items: center;
-
-  font-size: 20px;
+  gap: 8px;
+  font-size: 18px;
   font-weight: bold;
-  color: var(--text);
+  color: #ffffff;
 }
 
 .logoText img {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   border: none;
   outline: none;
   border-radius: 0;
-  mix-blend-mode: lighten;
 }
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
-/* Alias cho tên class dùng trong page.tsx (navMenu / active / sidebarDivider)
-   để khớp với các class thực tế đang được gọi trong component */
 .navMenu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.active:hover {
   background: var(--accent);
   color: #ffffff;
 }
@@ -94,12 +103,17 @@
   border-radius: 8px;
   background: transparent;
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 14px;
+  font-family: inherit;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .navItem:hover {
   background: var(--surface-hover);
+  color: var(--text);
 }
 
 .navItemActive {
@@ -107,30 +121,48 @@
   color: #ffffff;
 }
 
+.navItemActive:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
 /* ---------- Main content ---------- */
 .main {
   flex: 1;
-  padding: 24px 40px;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 32px 40px 40px;
+  background: #ffffff;
 }
 
 .topbar {
+  flex-shrink: 0;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 64px;
+  padding: 0 24px;
+  background: #070b1c;
+}
+
+.topbarActions {
+  display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
 }
 
 .bellButton {
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid #263252;
+  background: #111a33;
   border-radius: 50%;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: #d3dcf0;
   cursor: pointer;
 }
 
@@ -161,7 +193,7 @@
 }
 
 .sectionTitle {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: bold;
   color: var(--text);
   margin: 0 0 12px;
@@ -194,7 +226,8 @@
 }
 
 .joinCard {
-  background: var(--surface);
+  background: var(--surface-hover);
+  border-color: var(--border);
   color: var(--text);
 }
 
@@ -234,7 +267,7 @@
 
 /* ---------- Danh sách lớp học ---------- */
 .classBox {
-  background: var(--surface);
+  background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
@@ -247,7 +280,7 @@
 }
 
 .viewAll {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--accent);
   text-decoration: none;
 }
@@ -260,7 +293,7 @@
 
 .tab {
   border: none;
-  background: var(--surface-hover);
+  background: #ffffff;
   color: var(--text-muted);
   padding: 8px 14px;
   border-radius: 8px;
@@ -271,12 +304,11 @@
 .tabActive {
   background: var(--accent);
   color: #fff;
-  font-size: 16px;
 }
 
 .emptyText {
   color: var(--text-faint);
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
   padding: 20px 0;
 }
@@ -285,12 +317,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 0;
-  border-top: 1px solid var(--border);
+  padding: 14px;
+  margin-bottom: 8px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
-.classCard:first-of-type {
-  border-top: none;
+.classCard:last-child {
+  margin-bottom: 0;
 }
 
 .classIcon {
@@ -342,11 +377,6 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
-
-/* =========================================================
-   Màn hình "Tham gia lớp học" (quét QR / nhập mã)
-   Thay thế toàn bộ trang, không phải tab.
-   ========================================================= */
 
 .joinScreen {
   width: 100%;

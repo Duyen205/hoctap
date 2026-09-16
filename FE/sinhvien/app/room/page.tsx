@@ -247,9 +247,6 @@ export default function ClassroomPage() {
 
   return (
     <div className={styles.container}>
-      {/* ===================== HEADER ===================== */}
-      {/* ĐÃ SỬA: header giờ chỉ còn 3 phần — logo, tên/mã lớp (giữa), tài khoản (phải).
-          Dải camera đã được chuyển ra khỏi header, xem khối .cameraBar ngay bên dưới. */}
       <header className={styles.topBar}>
         <div className={styles.brand}>
           <img src="/Ai.png" alt="ClassBridge AI" className={styles.logo} />

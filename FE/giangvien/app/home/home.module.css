@@ -1,11 +1,11 @@
 .page {
-  --bg: #070b1c;
-  --surface: #10162c;
-  --surface-hover: #171f3a;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #f2f4fa;
-  --text-muted: #aab0c4;
-  --text-faint: #7c8296;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f4f6fb;
+  --border: #e4e9f2;
+  --text: #14213a;
+  --text-muted: #6b7690;
+  --text-faint: #9aa4ba;
   --accent: #2f6fed;
   --accent-soft: rgba(47, 111, 237, 0.16);
   --success: #22c55e;
@@ -23,11 +23,13 @@
    1. SIDEBAR
    ========================================================= */
 .sidebar {
-  width: 230px;
+  width: 232px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border-right: 1px solid var(--border);
-  padding: 20px;
+  padding: 20px 16px;
 }
 
 .logoArea {
@@ -56,13 +58,15 @@
   border: none;
   outline: none;
   border-radius: 0;
-  mix-blend-mode: lighten;
+  mix-blend-mode: multiply;
+  filter: invert(1);
 }
 
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
+  flex: 1;
 }
 
 .navItem {
@@ -72,27 +76,95 @@
   text-align: left;
   padding: 10px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   background: transparent;
-  color: white;
+  color: var(--text-muted);
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .navItem:hover {
   background: var(--surface-hover);
+  color: var(--text);
 }
 
 .navItemActive {
-  background: var(--accent);
-  color: #ffffff;
+  background: var(--accent-soft);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.navGroup .navItem:hover {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.navChevron {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.navChevronOpen {
+  transform: rotate(90deg);
+}
+
+.navChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 3px 0 7px;
+}
+
+.navItemChild {
+  width: calc(100% - 8px);
+  margin-left: 8px;
+  padding: 9px 12px 9px 36px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-decoration: none;
+  font-family: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transform-origin: left center;
+  transition: transform 0.15s ease;
+}
+
+.navItemChild:hover {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transform: scale(1.06);
 }
 
 .contentArea {
+  position: relative;
   flex: 1;
   padding: 24px 40px;
   min-width: 0;
+}
+
+.mainOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow-y: auto;
+  background: #ffffff;
 }
 
 .topbar {
@@ -101,6 +173,10 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
+}
+
+.topbar .logoText {
+  color: var(--text);
 }
 
 .bellButton {
@@ -132,7 +208,7 @@
 .sectionTitle {
   font-size: 16px;
   font-weight: bold;
-  color: white;
+  color: var(--text);
   margin: 0;
 }
 
@@ -262,7 +338,7 @@
 
 .statLabel {
   font-size: 12px;
-  color: white;
+  color: var(--text-muted);
 }
 
 .classActions {
@@ -305,7 +381,7 @@
 .label {
   display: block;
   font-size: 13px;
-  color: white;
+  color: var(--text);
   margin: 16px 0 6px;
 }
 
@@ -324,7 +400,7 @@
   color: var(--text);
   font-family: inherit;
   outline: none;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .input:focus,
@@ -448,7 +524,8 @@
 }
 .questionPanel {
   margin-top: 20px;
-  background: #1e293b;
+  background: #ffffff;
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -457,7 +534,7 @@
 }
 
 .questionPanel h3 {
-  color: white;
+  color: var(--text);
   font-size: 18px;
   margin: 0;
 }
