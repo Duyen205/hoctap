@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import AccountMenu from "../account/AccountMenu";
 import {
   GraduationCap,
   Home,
@@ -188,6 +189,7 @@ const MOCK_QUESTION_GROUPS: QuestionGroup[] = [
 /* Danh sách menu bên trái: mỗi mục có href để điều hướng sang trang tương ứng */
 const NAV_ITEMS = [
   { label: 'Home', href: '/home', icon: Home },
+    { label: "My class", href: "/my-class", icon: BookOpen },
   { label: 'Live Lessions', href: '/live-lession', icon: Radio },
   { label: 'Question grouping', href: '/question', icon: MessageSquare },
   { label: 'Lesson Summary', href: '/summary', icon: FileText },
@@ -199,6 +201,8 @@ const SETTING_NAV_ITEM = { label: 'Setting', href: '/setting', icon: Settings };
 export default function QuestionCenterPage() {
   const router = useRouter();
   const pathname = usePathname();
+
+  const [teacherName, setTeacherName] = useState("");
 
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const classInfo = useMemo(
@@ -293,8 +297,22 @@ export default function QuestionCenterPage() {
           <button type="button" className={styles.topBannerIconBtn} aria-label="Thông báo">
             <Bell size={17} className={styles.topBannerBellIcon} />
           </button>
-
-          <div className={styles.topBannerAvatar}>{getInitials(currentUser.name)}</div>
+        <AccountMenu
+            teacherName={teacherName}
+            onSaveAccountInfo={(info) => {
+              // TODO: gọi API cập nhật thông tin tài khoản thật ở đây
+              console.log("Lưu thông tin tài khoản:", info);
+              setTeacherName(info.username);
+            }}
+            onSubmitPasswordChange={(oldPassword, newPassword) => {
+              // TODO: gọi API đổi mật khẩu thật ở đây
+              console.log("Đổi mật khẩu:", { oldPassword, newPassword });
+            }}
+            onLogout={() => {
+              // TODO: gọi API/logic đăng xuất thật
+              console.log("Đăng xuất");
+            }}
+          />
         </div>
       </header>
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./setting.module.css";
+import AccountMenu from "../account/AccountMenu";
 import {
   Home,
   Radio,
@@ -15,10 +16,12 @@ import {
   Globe,
   Languages,
   ChevronDown,
+  BookOpen
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/home", icon: Home },
+   { label: "My class", href: "/my-class", icon: BookOpen },
   { label: "Live lessons", href: "/live-lession", icon: Radio },
   { label: "Question grouping", href: "/question", icon: MessageSquare },
   { label: "Lesson Summary", href: "/summary", icon: FileText },
@@ -110,7 +113,7 @@ function SelectField({
 export default function SettingPage() {
   const router = useRouter();
   const pathname = usePathname();
-
+const [teacherName, setTeacherName] = useState("");
   const [interfaceLanguage, setInterfaceLanguage] = useState("en");
   const [answerTranslation, setAnswerTranslation] = useState("both");
 
@@ -156,7 +159,22 @@ export default function SettingPage() {
 
         <div className={styles.topbarActions}>
           <button className={styles.bellButton}>🔔</button>
-          <div className={styles.avatar}></div>
+          <AccountMenu
+            teacherName={teacherName}
+            onSaveAccountInfo={(info) => {
+              // TODO: gọi API cập nhật thông tin tài khoản thật ở đây
+              console.log("Lưu thông tin tài khoản:", info);
+              setTeacherName(info.username);
+            }}
+            onSubmitPasswordChange={(oldPassword, newPassword) => {
+              // TODO: gọi API đổi mật khẩu thật ở đây
+              console.log("Đổi mật khẩu:", { oldPassword, newPassword });
+            }}
+            onLogout={() => {
+              // TODO: gọi API/logic đăng xuất thật
+              console.log("Đăng xuất");
+            }}
+          />
         </div>
       </header>
 

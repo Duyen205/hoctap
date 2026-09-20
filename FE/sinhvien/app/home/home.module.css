@@ -117,13 +117,13 @@
 }
 
 .navItemActive {
-  background: var(--accent);
-  color: #ffffff;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .navItemActive:hover {
-  background: var(--accent);
-  color: #ffffff;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 /* ---------- Main content ---------- */

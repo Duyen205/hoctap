@@ -78,6 +78,7 @@ export default function StudentDashboard() {
     activeTab === "ongoing" ? ongoingClasses : upcomingClasses;
   const NAV_ITEMS = [
     { label: "Home", href: "/home", icon: Home },
+    { label: "My class", href: "/my-class", icon: BookOpen },
     { label: "Live lessons", href: "/live-lession", icon: Radio },
     { label: "Question grouping", href: "/question", icon: MessageSquare },
     { label: "Lesson Summary", href: "/summary", icon: FileText },

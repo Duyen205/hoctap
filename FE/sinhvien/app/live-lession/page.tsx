@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import AccountMenu from "../account/AccountMenu";
 import {
   LayoutDashboard,
   Radio,
@@ -19,7 +20,8 @@ import {
   FlagOff,
   MessageSquare,
   FileText,
-  BarChart2
+  BarChart2,
+  BookOpen
 } from "lucide-react";
 import styles from "./live.module.css";
 
@@ -62,12 +64,13 @@ const TRANSCRIPT: TranscriptLine[] = [
 // route thật trong app/ của bạn.
 const NAV_ITEMS = [
   { label: "Home", href: "/home", icon: Home },
+  { label: "My class", href: "/my-class", icon: BookOpen }, 
   { label: "Live Sessions", href: "/live-lession", icon: Radio },
   { label: "Question Groups", href: "/question", icon: MessageSquare },
-  { label: "Lesson Summary", href: "/lesson-summary", icon: FileText },
+  { label: "Lesson Summary", href: "/summary", icon: FileText },
 ];
 
-const SETTINGS_ITEM = { label: "Settings", href: "/settings", icon: Settings };
+const SETTINGS_ITEM = { label: "Settings", href: "/setting", icon: Settings };
 
 /* ------------------------------------------------------------------ */
 /* Lưu bài giảng đã tổng hợp vào "Tài liệu" của trang Question Center.  */
@@ -99,6 +102,8 @@ type EndFlowStep = "closed" | "confirm" | "enterClassName";
 export default function LessonSummaryPage() {
   const pathname = usePathname();
   const router = useRouter();
+
+  const [teacherName, setTeacherName] = useState("");
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [endFlowStep, setEndFlowStep] = useState<EndFlowStep>("closed");
@@ -143,7 +148,22 @@ export default function LessonSummaryPage() {
           >
             <Bell size={17} className={styles.topBannerBellIcon} />
           </button>
-          <div className={styles.topBannerAvatar}>NA</div>
+  <AccountMenu
+            teacherName={teacherName}
+            onSaveAccountInfo={(info) => {
+              // TODO: gọi API cập nhật thông tin tài khoản thật ở đây
+              console.log("Lưu thông tin tài khoản:", info);
+              setTeacherName(info.username);
+            }}
+            onSubmitPasswordChange={(oldPassword, newPassword) => {
+              // TODO: gọi API đổi mật khẩu thật ở đây
+              console.log("Đổi mật khẩu:", { oldPassword, newPassword });
+            }}
+            onLogout={() => {
+              // TODO: gọi API/logic đăng xuất thật
+              console.log("Đăng xuất");
+            }}
+          />
         </div>
       </header>
 

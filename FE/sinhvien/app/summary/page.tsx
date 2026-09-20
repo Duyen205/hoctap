@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./summary.module.css";
+import AccountMenu from "../account/AccountMenu";
 import {
   Home,
   Radio,
@@ -30,6 +31,7 @@ import {
 // ---------- Sidebar — copy nguyên từ topbar/sidebar của trang Home để đồng bộ bố cục ----------
 const NAV_ITEMS = [
   { label: "Home", href: "/home", icon: Home },
+  { label: "My class", href: "/my-class", icon: BookOpen },
   { label: "Live lessons", href: "/live-lession", icon: Radio },
   { label: "Question grouping", href: "/question", icon: MessageSquare },
   { label: "Lesson Summary", href: "/summary", icon: FileText },
@@ -151,6 +153,8 @@ export default function LessonSummaryPage() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [teacherName, setTeacherName] = useState("");
+
   const [view, setView] = useState<View>("classes");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedLectureId, setSelectedLectureId] = useState<string | null>(null);
@@ -216,7 +220,22 @@ export default function LessonSummaryPage() {
         </div>
         <div className={styles.topbarActions}>
           <button className={styles.bellButton}>🔔</button>
-          <div className={styles.avatar}></div>
+          <AccountMenu
+            teacherName={teacherName}
+            onSaveAccountInfo={(info) => {
+              // TODO: gọi API cập nhật thông tin tài khoản thật ở đây
+              console.log("Lưu thông tin tài khoản:", info);
+              setTeacherName(info.username);
+            }}
+            onSubmitPasswordChange={(oldPassword, newPassword) => {
+              // TODO: gọi API đổi mật khẩu thật ở đây
+              console.log("Đổi mật khẩu:", { oldPassword, newPassword });
+            }}
+            onLogout={() => {
+              // TODO: gọi API/logic đăng xuất thật
+              console.log("Đăng xuất");
+            }}
+          />
         </div>
       </header>
 
