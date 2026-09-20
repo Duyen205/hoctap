@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react"; 
+import { QRCodeSVG } from "qrcode.react"; // npm install qrcode.react
 import styles from "./home.module.css";
 import Link from "next/link";
 import {
@@ -13,7 +12,9 @@ import {
   Users,
   CalendarClock,
   Settings,
+  ChevronRight,
   LayoutDashboard,
+  Plus,
   Bell,
   RefreshCw,
   Copy,
@@ -22,25 +23,17 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import ClassManagementPage from "../question/classmanagement/page";
+import TeacherQuestionGroupsPage from "../question/question-group/page";
 import {
   generateUniqueClassCode,
   generateQrPayload,
 } from "./classCodeGenerator";
 
-import AccountMenu from "../account-logo/AccountMenu";
-
+// Đổi thành domain thật khi triển khai
 const APP_BASE_URL = "https://classbridge.app";
 
-const NAV_ITEMS = [
-  { label: "Home", href: "/home", icon: Home },
-  { label: "Live Session", href: "/room", icon: Radio },
-  { label: "Class management", href: "/classmanagement", icon: Users },
-  { label: "Question grouping", href: "/question", icon: LayoutGrid },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-];
-
-const SETTING_NAV_ITEM = { label: "Settings", href: "/settings", icon: Settings };
-
+// Kiểu dữ liệu 1 lớp học (danh sách bên trái)
 type ClassItem = {
   id: string;
   code: string;
@@ -52,40 +45,45 @@ type ClassItem = {
   groupCount: number;
 };
 
+// TODO: thay bằng dữ liệu thật lấy từ API sau này
+const teacherName = "";
 const initialClasses: ClassItem[] = [];
+
+// TODO: lấy danh sách mã lớp đang có thật từ database để đảm bảo không trùng
 const existingClassCodes: string[] = [];
 
+// Khung bên phải đang ở chế độ nào: form tạo lớp / kết quả (QR-mã-link)
 type RightPanelView = "create" | "result";
 
 export default function TeacherHome() {
-  const pathname = usePathname();
-  const router = useRouter();
-
+  const [isQuestionMenuOpen, setIsQuestionMenuOpen] = useState(false);
+  const [showClassManagement, setShowClassManagement] = useState(false);
+  const [showQuestionGroups, setShowQuestionGroups] = useState(false);
+  // Danh sách lớp học — lưu trong state để lớp mới tạo hiện ngay lên danh sách
   const [classesList, setClassesList] = useState<ClassItem[]>(initialClasses);
-  const [rightPanelView, setRightPanelView] = useState<RightPanelView>("create");
 
-  // Form states
+  // Khung phải: tạo lớp hay hiển thị kết quả
+  const [rightPanelView, setRightPanelView] =
+    useState<RightPanelView>("create");
+
+  // ----- Form tạo lớp học -----
   const [subjectName, setSubjectName] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [classCode, setClassCode] = useState(() =>
-    generateUniqueClassCode(existingClassCodes)
+    generateUniqueClassCode(existingClassCodes),
   );
   const [copied, setCopied] = useState<"code" | "link" | null>(null);
 
   const joinLink = `${APP_BASE_URL}/join/${classCode}`;
 
+  // Lớp "Đang diễn ra" luôn được xếp lên trên, "Sắp diễn ra" xếp dưới
   const sortedClasses = [...classesList].sort((a, b) => {
     const weight = (c: ClassItem) => (c.status === "ongoing" ? 0 : 1);
     return weight(a) - weight(b);
   });
-
-  function handleNavigate(href: string) {
-    if (!href || href === pathname) return;
-    router.push(href);
-  }
 
   function handleRegenerateCode() {
     setClassCode(generateUniqueClassCode(existingClassCodes));
@@ -95,16 +93,17 @@ export default function TeacherHome() {
     if (!subjectName.trim() || !date || !startTime || !endTime) return;
 
     const newClass: ClassItem = {
-      id: classCode,
+      id: classCode, // mã lớp là duy nhất nên dùng luôn làm id
       code: classCode,
       name: subjectName.trim(),
       date,
       time: `${startTime} - ${endTime}`,
-      status: "upcoming",
+      status: "upcoming", // TODO: tự tính "ongoing" nếu thời gian hiện tại nằm trong khoảng date/startTime-endTime
       studentCount: 0,
       groupCount: 0,
     };
 
+    // TODO: gửi newClass lên server để lưu thật, existingClassCodes cũng nên cập nhật lại từ server
     setClassesList((prev) => [...prev, newClass]);
     setRightPanelView("result");
   }
@@ -115,6 +114,7 @@ export default function TeacherHome() {
     setTimeout(() => setCopied(null), 1500);
   }
 
+  // Quay lại form để tạo thêm 1 lớp mới khác
   function handleCreateAnother() {
     setSubjectName("");
     setDescription("");
@@ -125,90 +125,123 @@ export default function TeacherHome() {
     setRightPanelView("create");
   }
 
+  // ----- Hành động trên từng thẻ lớp học (thêm sinh viên / sửa / xóa) -----
   function handleAddStudent(classId: string) {
+    // TODO: mở modal thêm sinh viên vào lớp classId
     console.log("Thêm sinh viên vào lớp:", classId);
   }
 
   function handleEditClass(classId: string) {
+    // TODO: mở form sửa thông tin lớp classId
     console.log("Sửa lớp:", classId);
   }
 
   function handleDeleteClass(classId: string) {
+    // TODO: gọi API xóa lớp thật, hiện tại chỉ xóa khỏi state để demo
     setClassesList((prev) => prev.filter((c) => c.id !== classId));
   }
 
   return (
     <div className={styles.page}>
-      {/* ---------- Topbar ---------- */}
-      <header className={styles.topBar}>
-        <div className={styles.topBarBrand}>
+      {/* 1. Sidebar */}
+      <aside className={styles.sidebar}>
+        <div className={styles.logoArea}>
           <Link href="/" className={styles.logoLink}>
             <span className={styles.logoText}>
               <img src="/Ai.png" alt="Logo" /> ClassBridge
             </span>
           </Link>
         </div>
-        <div className={styles.topBarActions}>
-          <button
-            type="button"
-            className={styles.topBarIconButton}
-            aria-label="Thông báo"
+
+        <nav className={styles.nav}>
+          <Link
+            href="/home"
+            className={`${styles.navItem} ${styles.navItemActive}`}
           >
-            <Bell size={19} />
+            <Home size={18} />
+            <span>Home</span>
+          </Link>
+          <Link href="/room" className={styles.navItem}>
+            <Radio size={18} />
+            <span>Live Session</span>
+          </Link>
+          <div className={styles.navGroup}>
+            <button
+              type="button"
+              className={styles.navItem}
+              onClick={() => setIsQuestionMenuOpen((prev) => !prev)}
+            >
+              <LayoutGrid size={18} />
+              <span>Question grouping</span>
+              <ChevronRight
+                size={16}
+                className={`${styles.navChevron} ${
+                  isQuestionMenuOpen ? styles.navChevronOpen : ""
+                }`}
+              />
+            </button>
+            {isQuestionMenuOpen && (
+              <div className={styles.navChildren}>
+                <button
+                  type="button"
+                  className={styles.navItemChild}
+                  onClick={() => setShowClassManagement(true)}
+                >
+                  <span>Class management</span>
+                </button>
+                <button
+                  type="button"
+                  className={styles.navItemChild}
+                  onClick={() => setShowQuestionGroups(true)}
+                >
+                  <span>Gom câu hỏi</span>
+                </button>
+              </div>
+            )}
+          </div>
+          <Link href="/home" className={styles.navItem}>
+            <Users size={18} />
+            <span>Students</span>
+          </Link>
+          <Link href="/home" className={styles.navItem}>
+            <CalendarClock size={18} />
+            <span>Sessions</span>
+          </Link>
+          <Link href="/home" className={styles.navItem}>
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </Link>
+          <div className={styles.sidebarDivider}>
+            <Link href="/home" className={styles.navItem}>
+              <Settings size={18} />
+              <span>Settings</span>
+            </Link>
+          </div>
+        </nav>
+      </aside>
+
+      <div className={styles.contentArea}>
+        {showClassManagement && (
+          <div className={styles.mainOverlay}>
+            <ClassManagementPage embedded />
+          </div>
+        )}
+        {showQuestionGroups && (
+          <div className={styles.mainOverlay}>
+            <TeacherQuestionGroupsPage embedded />
+          </div>
+        )}
+
+        {/* Thanh trên cùng */}
+        <div className={styles.topbar}>
+          <button className={styles.bellButton}>
+            <Bell size={18} />
           </button>
-          <AccountMenu
-            onOpenAccountInfo={() => {
-              console.log("Mở thông tin tài khoản");
-            }}
-            onChangePassword={() => {
-              // TODO: mở form đổi mật khẩu
-              console.log("Đổi mật khẩu");
-            }}
-            onLogout={() => {
-              // TODO: gọi API/logic đăng xuất thật
-              console.log("Đăng xuất");
-            }}
-          />
+          <div className={styles.avatar}>DR</div>
         </div>
-      </header>
 
-      <div className={styles.body}>
-        {/* ---------- Sidebar ---------- */}
-        <aside className={styles.sidebar}>
-          <nav className={styles.navMenu}>
-            {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => handleNavigate(href)}
-                className={`${styles.navItem} ${
-                  pathname === href ? styles.navItemActive : ""
-                }`}
-              >
-                <Icon size={18} />
-                <span>{label}</span>
-              </button>
-            ))}
-
-            {/* Sử dụng class sidebarDivider để tạo thanh ngang */}
-            <div className={styles.sidebarDivider}>
-              <button
-                type="button"
-                onClick={() => handleNavigate(SETTING_NAV_ITEM.href)}
-                className={`${styles.navItem} ${
-                  pathname === SETTING_NAV_ITEM.href ? styles.navItemActive : ""
-                }`}
-              >
-                <SETTING_NAV_ITEM.icon size={18} />
-                <span>{SETTING_NAV_ITEM.label}</span>
-              </button>
-            </div>
-          </nav>
-        </aside>
-
-        {/* ---------- Main content ---------- */}
         <div className={styles.twoColumn}>
-          {/* Cột 1: Lớp học của tôi */}
+          {/* 2. Lớp học của tôi */}
           <section className={styles.classBox}>
             <div className={styles.classBoxHeader}>
               <h2 className={styles.sectionTitle}>Lớp học của tôi</h2>
@@ -286,7 +319,6 @@ export default function TeacherHome() {
             ))}
           </section>
 
-          {/* Cột 2: Tạo lớp học / Kết quả */}
           <section className={styles.formCard}>
             {rightPanelView === "create" ? (
               <>

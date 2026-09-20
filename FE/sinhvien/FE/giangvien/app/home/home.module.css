@@ -1,0 +1,608 @@
+.page {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f4f6fb;
+  --border: #e4e9f2;
+  --text: #14213a;
+  --text-muted: #6b7690;
+  --text-faint: #9aa4ba;
+  --accent: #2f6fed;
+  --accent-soft: rgba(47, 111, 237, 0.16);
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.14);
+  --danger: #ef4444;
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: ligatures;
+  color: var(--text);
+}
+
+/* =========================================================
+   1. SIDEBAR
+   ========================================================= */
+.sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  padding: 0 8px 24px;
+}
+
+.logoLink {
+  text-decoration: none;
+}
+
+.logoText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.logoText img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border: none;
+  outline: none;
+  border-radius: 0;
+  mix-blend-mode: multiply;
+  filter: invert(1);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.navItem:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.navItemActive {
+  background: var(--accent-soft);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.navGroup .navItem:hover {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.navChevron {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.navChevronOpen {
+  transform: rotate(90deg);
+}
+
+.navChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 3px 0 7px;
+}
+
+.navItemChild {
+  width: calc(100% - 8px);
+  margin-left: 8px;
+  padding: 9px 12px 9px 36px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-decoration: none;
+  font-family: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transform-origin: left center;
+  transition: transform 0.15s ease;
+}
+
+.navItemChild:hover {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transform: scale(1.06);
+}
+
+.contentArea {
+  position: relative;
+  flex: 1;
+  padding: 24px 40px;
+  min-width: 0;
+}
+
+.mainOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.topbar .logoText {
+  color: var(--text);
+}
+
+.bellButton {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text);
+  margin: 0;
+}
+
+/* 2 khung đặt cạnh nhau */
+.twoColumn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+}
+
+.classBox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.classBoxHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.viewAll {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.emptyText {
+  color: var(--text-faint);
+  font-size: 14px;
+  text-align: center;
+  padding: 28px 0;
+}
+
+.classCard {
+  position: relative;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+
+.classCard:first-of-type {
+  border-top: none;
+}
+
+.classCardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.classIcon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.classInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.classTitle {
+  font-weight: bold;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.classMeta {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.statusOngoing,
+.statusUpcoming {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.statusOngoing {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.statusUpcoming {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.classStats {
+  display: flex;
+  gap: 12px;
+}
+
+.statItem {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.statNumber {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.classActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.actionBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.actionBtnDanger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.formCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px 24px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+  margin: 16px 0 6px;
+}
+
+.required {
+  color: var(--danger);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  color-scheme: light;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.codeRow {
+  display: flex;
+  gap: 8px;
+}
+
+.codeRow .input {
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.regenerateBtn {
+  flex-shrink: 0;
+  width: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.regenerateBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.helperText {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 6px 0 0;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeDash {
+  color: var(--text-muted);
+}
+
+.createBtn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 24px;
+}
+
+.createBtn:hover {
+  filter: brightness(1.08);
+}
+
+/* =========================================================
+   KẾT QUẢ TẠO LỚP — hiển thị NGAY TRONG khung "Tạo lớp học" bên phải
+   ========================================================= */
+.resultInlineSubtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+
+.inlineResultCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* QR to, dễ quét từ xa dù nằm trong khung hẹp hơn */
+.bigQrWrap {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+.bigCodeLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.bigCodeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.bigCode {
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--text);
+}
+.questionPanel {
+  margin-top: 20px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.questionPanel h3 {
+  color: var(--text);
+  font-size: 18px;
+  margin: 0;
+}
+
+.questionInput {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.sendQuestionBtn {
+  align-self: flex-end;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sendQuestionBtn:hover {
+  background: #1d4ed8;
+}
+
+.toolBtnActive {
+  background: #2563eb;
+  color: white;
+}
+.linkRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.linkText {
+  font-size: 14px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyIconBtn {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.copyIconBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}

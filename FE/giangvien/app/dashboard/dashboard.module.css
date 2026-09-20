@@ -21,6 +21,7 @@
   overflow: hidden;
 }
 
+/* ---------- Top Bar ---------- */
 .topBar {
   display: flex;
   align-items: center;

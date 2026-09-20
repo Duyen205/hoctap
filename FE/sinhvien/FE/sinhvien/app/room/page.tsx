@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Mic,
@@ -77,39 +77,17 @@ function nowLabel() {
   });
 }
 
-// useSearchParams() bắt buộc component dùng nó phải nằm trong <Suspense>,
-// nên tách phần nội dung ra component con, export default bên dưới chỉ bọc Suspense.
 export default function ClassroomPage() {
-  return (
-    <Suspense fallback={null}>
-      <ClassroomPageInner />
-    </Suspense>
-  );
-}
-
-function ClassroomPageInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Mã lớp + tên lớp: ưu tiên lấy từ query string (?code=...) khi vào phòng
-  // từ màn hình "Tham gia lớp học" ở dashboard, nếu không có thì dùng mặc định.
-  const [classInfo] = useState<ClassInfo>(() => {
-    const codeFromUrl = searchParams.get("code");
-    if (codeFromUrl) {
-      return { name: `Lớp ${codeFromUrl}`, code: codeFromUrl };
-    }
-    return DEFAULT_CLASS_INFO;
-  });
+  const [classInfo] = useState<ClassInfo>(DEFAULT_CLASS_INFO);
 
-  const [currentUser, setCurrentUser] = useState<CurrentUser>(() => {
-    const nameFromUrl = searchParams.get("displayName");
-    return { id: "me", name: nameFromUrl?.trim() || "ds" };
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({
+    id: "me",
+    name: "ds",
   });
 
   useEffect(() => {
-    // Nếu đã có tên từ query string (người dùng vừa nhập ở dashboard) thì
-    // không ghi đè bằng dữ liệu cũ trong localStorage.
-    if (searchParams.get("displayName")) return;
     try {
       const raw = localStorage.getItem("user");
       if (raw) {
@@ -123,7 +101,7 @@ function ClassroomPageInner() {
     } catch {
       // Không đọc được thì giữ giá trị mặc định.
     }
-  }, [searchParams]);
+  }, []);
 
   const [participants] = useState<Participant[]>(MOCK_PARTICIPANTS);
 
@@ -273,7 +251,7 @@ function ClassroomPageInner() {
         <div className={styles.brand}>
           <img src="/Ai.png" alt="ClassBridge AI" className={styles.logo} />
           <span className={styles.brandName}>
-            ClassBridge <span className={styles.brandAccent}></span>
+            ClassBridge <span className={styles.brandAccent}>AI</span>
           </span>
         </div>
 

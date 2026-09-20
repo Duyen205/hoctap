@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import {
   Mic,
   MicOff,
@@ -77,39 +76,17 @@ function nowLabel() {
   });
 }
 
-// useSearchParams() bắt buộc component dùng nó phải nằm trong <Suspense>,
-// nên tách phần nội dung ra component con, export default bên dưới chỉ bọc Suspense.
 export default function ClassroomPage() {
-  return (
-    <Suspense fallback={null}>
-      <ClassroomPageInner />
-    </Suspense>
-  );
-}
-
-function ClassroomPageInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Mã lớp + tên lớp: ưu tiên lấy từ query string (?code=...) khi vào phòng
-  // từ màn hình "Tham gia lớp học" ở dashboard, nếu không có thì dùng mặc định.
-  const [classInfo] = useState<ClassInfo>(() => {
-    const codeFromUrl = searchParams.get("code");
-    if (codeFromUrl) {
-      return { name: `Lớp ${codeFromUrl}`, code: codeFromUrl };
-    }
-    return DEFAULT_CLASS_INFO;
-  });
+  const [classInfo] = useState<ClassInfo>(DEFAULT_CLASS_INFO);
 
-  const [currentUser, setCurrentUser] = useState<CurrentUser>(() => {
-    const nameFromUrl = searchParams.get("displayName");
-    return { id: "me", name: nameFromUrl?.trim() || "ds" };
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({
+    id: "me",
+    name: "ds",
   });
 
   useEffect(() => {
-    // Nếu đã có tên từ query string (người dùng vừa nhập ở dashboard) thì
-    // không ghi đè bằng dữ liệu cũ trong localStorage.
-    if (searchParams.get("displayName")) return;
     try {
       const raw = localStorage.getItem("user");
       if (raw) {
@@ -123,7 +100,7 @@ function ClassroomPageInner() {
     } catch {
       // Không đọc được thì giữ giá trị mặc định.
     }
-  }, [searchParams]);
+  }, []);
 
   const [participants] = useState<Participant[]>(MOCK_PARTICIPANTS);
 
@@ -254,7 +231,7 @@ function ClassroomPageInner() {
   const handleLeave = () => {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    router.push("/");
+    window.location.assign("/home");
   };
 
   useEffect(() => {
@@ -269,11 +246,14 @@ function ClassroomPageInner() {
 
   return (
     <div className={styles.container}>
+      {/* ===================== HEADER ===================== */}
+      {/* ĐÃ SỬA: header giờ chỉ còn 3 phần — logo, tên/mã lớp (giữa), tài khoản (phải).
+          Dải camera đã được chuyển ra khỏi header, xem khối .cameraBar ngay bên dưới. */}
       <header className={styles.topBar}>
         <div className={styles.brand}>
           <img src="/Ai.png" alt="ClassBridge AI" className={styles.logo} />
           <span className={styles.brandName}>
-            ClassBridge <span className={styles.brandAccent}></span>
+            ClassBridge <span className={styles.brandAccent}>AI</span>
           </span>
         </div>
 
@@ -578,40 +558,35 @@ function ClassroomPageInner() {
           <CircleHelp size={20} />
           <span>Câu hỏi</span>
         </button>
-        <button
-          className={styles.toolBtn}
-          onClick={() => setShowLeavePopup(true)}
-        >
-          <PhoneOff size={20} />
-          <span>Leave</span>
-        </button>
+        <div className={styles.leaveWrapper}>
+          <button
+            type="button"
+            className={styles.toolBtn}
+            onClick={() => setShowLeavePopup((prev) => !prev)}
+          >
+            <PhoneOff size={20} />
+            <span>Leave</span>
+          </button>
+          {showLeavePopup && (
+            <div className={styles.leaveMenu}>
+              <button
+                type="button"
+                className={styles.leaveMeetingBtn}
+                onClick={handleLeave}
+              >
+                Leave meeting
+              </button>
+              <button
+                type="button"
+                className={styles.cancelLeaveBtn}
+                onClick={() => setShowLeavePopup(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </footer>
-      <div className={styles.leaveWrapper}>
-        <button
-          className={styles.toolBtn}
-          onClick={() => setShowLeavePopup(!showLeavePopup)}
-        >
-          <PhoneOff size={20} />
-          <span>Leave</span>
-        </button>
-        {showLeavePopup && (
-          <div className={styles.leaveMenu}>
-            <Link
-              href="/main"
-              className={styles.leaveMeetingBtn}
-              onClick={handleLeave}
-            >
-              Leave meeting
-            </Link>
-            <button
-              className={styles.cancelLeaveBtn}
-              onClick={() => setShowLeavePopup(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
