@@ -95,10 +95,10 @@
 }
 
 .classList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 20px;
-  max-width: 800px;
+  width: 100%;
 }
 
 .classCard {

@@ -38,7 +38,7 @@ function ClassDetailContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentId = searchParams.get("id"); // Lấy ID từ URL: /my-class/class-id?id=1
+  const currentId = searchParams.get("id"); 
   
   const [classDetail, setClassDetail] = useState<ClassData | null>(null);
 
@@ -157,10 +157,10 @@ function ClassDetailContent() {
 
               {/* Danh sách Previous Sessions */}
               <div className={styles.previousSection}>
-                <h3 className={styles.previousTitle}>Previous Sessions</h3>
+                <h3 className={styles.previousTitle}>Class History</h3>
                 <div className={styles.previousList}>
                   {classDetail.previousSessions.map((session) => (
-                    <div key={session.id} className={styles.previousItem}>
+                    <div key={session.id} className={styles.previousItem}onClick={() =>router.push(`/summary?id=${classDetail.id}&session=${session.id}`)}>
                       <div className={styles.previousItemLeft}>
                         <span className={styles.weekBadge}>{session.week}</span>
                         <span className={styles.previousItemTitle}>{session.title}</span>
