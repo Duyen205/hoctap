@@ -35,9 +35,6 @@ export default function HomePage() {
           <Link href="/login" className={styles.loginBtn}>
             Đăng nhập
           </Link>
-          <Link href="/register" className={styles.signupBtn}>
-            Đăng ký
-          </Link>
         </div>
       </header>
 

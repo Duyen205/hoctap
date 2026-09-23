@@ -37,16 +37,8 @@ type NavGroup = {
 };
 
 const NAV_GROUPS: NavGroup[] = [
-  { key: "dashboard", label: "Dashboard", href: "/admin/dashboard", icon: Home },
-  {
-    key: "accountManagement",
-    label: "Account Management",
-    icon: Users,
-    children: [
-      { label: "Accounts", href: "/admin/accounts" },
-      { label: "Roles & Permissions", href: "/admin/roles" },
-    ],
-  },
+  { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: Home },
+  { key: "accountManagement", label: "Account Management", href: "/account", icon: Users },
   {
     key: "userManagement",
     label: "User Management",

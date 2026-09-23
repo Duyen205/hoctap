@@ -30,18 +30,13 @@ export default function HomePage() {
           <a href="#hieu-qua" className={styles.navLink}>Hiệu quả</a>
         </nav>
 
-        {/* Khung Login & Sign Up - Đã liên kết cả 2 nút sang route tương ứng */}
         <div className={styles.authGroup}>
           <Link href="/login" className={styles.loginBtn}>
             Đăng nhập
           </Link>
-          <Link href="/register" className={styles.signupBtn}>
-            Đăng ký
-          </Link>
         </div>
       </header>
 
-      {/* Main Hero Section */}
       <main className={styles.main}>
         {/* Badge */}
         <div className={styles.badge}>

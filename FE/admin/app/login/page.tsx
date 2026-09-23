@@ -142,17 +142,6 @@ export default function Login() {
                 alt="Facebook"
               />
             </button>
-            <button
-              className={styles["social-btn"]}
-              title="Apple"
-              type="button"
-            >
-              <img
-                className={styles["social-icon"]}
-                src="/ap.png"
-                alt="Apple"
-              />
-            </button>
           </div>
         </div>
       </main>
