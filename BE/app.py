@@ -1,49 +1,42 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
-from config import Config
-from extensions import db, jwt
-from auth import auth_bp
-from decorators import roles_required
-from models import User, Role
+from src.api.auth import router as auth_router
+from src.core.database import engine
 
+app = FastAPI(
+    title="ClassBridge API",
+    version="1.0.0",
+    description="AI Powered Teacher Assistant for Foreign DTU",
+)
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
-
-    db.init_app(app)
-    jwt.init_app(app)
-
-    app.register_blueprint(auth_bp)
-
-    with app.app_context():
-        db.create_all()
-
-    @app.route("/")
-    def home():
-        return "Server Flask đang chạy và kết nối PostgreSQL thành công!"
-
-    # Route mẫu minh họa phân quyền: chỉ ADMIN mới xem được danh sách user.
-    @app.route("/api/admin/users", methods=["GET"])
-    @roles_required(Role.ADMIN)
-    def list_users():
-        users = User.query.order_by(User.created_at.desc()).all()
-        return jsonify([u.to_dict() for u in users]), 200
-
-    # Route mẫu cho GIẢNG VIÊN.
-    @app.route("/api/lecturer/ping", methods=["GET"])
-    @roles_required(Role.LECTURER, Role.ADMIN)
-    def lecturer_ping():
-        return jsonify({"message": "Xin chào giảng viên!"}), 200
-
-    return app
+app.include_router(auth_router)
 
 
-app = create_app()
+@app.get("/")
+async def root():
+    return {"message": "ClassBridge API (FastAPI) is running"}
+
+
+@app.get("/api/health")
+async def health():
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
-
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=5000, reload=False)

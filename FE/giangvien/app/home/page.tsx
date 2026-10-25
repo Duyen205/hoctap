@@ -1,420 +1,362 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react"; 
-import styles from "./home.module.css";
-import Link from "next/link";
-import {
-  Home,
-  BookOpen,
-  Radio,
-  LayoutGrid,
-  Users,
-  CalendarClock,
-  Settings,
-  LayoutDashboard,
-  Bell,
-  RefreshCw,
-  Copy,
-  Check,
-  UserPlus,
-  Pencil,
-  Trash2,
-} from "lucide-react";
-import {
-  generateUniqueClassCode,
-  generateQrPayload,
-} from "./classCodeGenerator";
-
+import { useEffect, useRef, useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import AccountMenu from "../account-logo/AccountMenu";
+import Layout from "../components/Layout";
+import AddStudentModal from "./AddStudentModal";
+import HomeClassForm from "./HomeClassForm";
+import HomeMainPage from "./HomeMainPage";
+import styles from "./home.module.css";
+import {
+  generateQrPayload,
+  generateUniqueClassCode,
+} from "./classCodeGenerator";
+import type {
+  CopiedValue,
+  HomeClassItem,
+  HomeFormView,
+  StudentForm,
+  StudentFormErrors,
+} from "./types";
 
 const APP_BASE_URL = "https://classbridge.app";
-
-const NAV_ITEMS = [
-  { label: "Home", href: "/home", icon: Home },
-  { label: "Live Session", href: "/room", icon: Radio },
-  { label: "Class management", href: "/classmanagement", icon: Users },
-  { label: "Question grouping", href: "/question", icon: LayoutGrid },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-];
-
-const SETTING_NAV_ITEM = { label: "Settings", href: "/settings", icon: Settings };
-
-type ClassItem = {
-  id: string;
-  code: string;
-  name: string;
-  date: string;
-  time: string;
-  status: "ongoing" | "upcoming";
-  studentCount: number;
-  groupCount: number;
+const EMPTY_STUDENT_FORM: StudentForm = {
+  fullName: "",
+  studentId: "",
+  email: "",
+  phone: "",
 };
 
-const initialClasses: ClassItem[] = [];
-const existingClassCodes: string[] = [];
-
-type RightPanelView = "create" | "result";
-
 export default function TeacherHome() {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const [classesList, setClassesList] = useState<ClassItem[]>(initialClasses);
-  const [rightPanelView, setRightPanelView] = useState<RightPanelView>("create");
-
-  // Form states
+  const excelInputRef = useRef<HTMLInputElement>(null);
+  const slideInputRef = useRef<HTMLInputElement>(null);
+  const [classesList, setClassesList] = useState<HomeClassItem[]>([]);
+  const [rightPanelView, setRightPanelView] = useState<HomeFormView>("create");
+  const [editingClassId, setEditingClassId] = useState<string | null>(null);
   const [subjectName, setSubjectName] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
+  const [classCode, setClassCode] = useState(() => generateUniqueClassCode([]));
+  const [sessionCount, setSessionCount] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [classCode, setClassCode] = useState(() =>
-    generateUniqueClassCode(existingClassCodes)
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [copied, setCopied] = useState<CopiedValue>(null);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [activeSlideClassId, setActiveSlideClassId] = useState<string | null>(
+    null,
   );
-  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("Thao tác thành công!");
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [targetClassId, setTargetClassId] = useState<string | null>(null);
+  const [studentForm, setStudentForm] =
+    useState<StudentForm>(EMPTY_STUDENT_FORM);
+  const [studentErrors, setStudentErrors] = useState<StudentFormErrors>({});
 
   const joinLink = `${APP_BASE_URL}/join/${classCode}`;
 
-  const sortedClasses = [...classesList].sort((a, b) => {
-    const weight = (c: ClassItem) => (c.status === "ongoing" ? 0 : 1);
-    return weight(a) - weight(b);
-  });
+  useEffect(() => {
+    if (!showToast) return;
+    const timer = window.setTimeout(() => setShowToast(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [showToast]);
 
-  function handleNavigate(href: string) {
-    if (!href || href === pathname) return;
-    router.push(href);
+  function validateSessionCount(value: string) {
+    if (!value.trim()) {
+      setSessionError("Vui lòng nhập số buổi học!");
+      return false;
+    }
+    if (!Number.isFinite(Number(value)) || Number(value) <= 0) {
+      setSessionError("Vui lòng nhập số buổi học lớn hơn 0!");
+      return false;
+    }
+    setSessionError(null);
+    return true;
   }
 
-  function handleRegenerateCode() {
-    setClassCode(generateUniqueClassCode(existingClassCodes));
+  function handleStudentFormChange(field: keyof StudentForm, value: string) {
+    setStudentForm((previous) => ({ ...previous, [field]: value }));
+    setStudentErrors((previous) => {
+      const next = { ...previous };
+      const cleanNameRegex = /^[\p{L}\s]+$/u;
+
+      if (field === "fullName") {
+        if (!value.trim()) next.fullName = "Vui lòng nhập họ và tên!";
+        else if (!cleanNameRegex.test(value.trim())) {
+          next.fullName = "Họ tên chỉ được chứa chữ cái, không được chứa số!";
+        } else delete next.fullName;
+      }
+      if (field === "studentId") {
+        if (!value.trim()) next.studentId = "Vui lòng nhập mã số sinh viên!";
+        else if (!/^\d{11}$/.test(value.trim())) {
+          next.studentId = "Mã số sinh viên phải đúng 11 chữ số!";
+        } else delete next.studentId;
+      }
+      if (field === "email") {
+        if (value.trim() && !/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(value.trim())) {
+          next.email = "Email phải đúng định dạng @gmail.com!";
+        } else delete next.email;
+      }
+      if (field === "phone") {
+        if (value.trim() && !/^\d{10}$/.test(value.trim())) {
+          next.phone = "Số điện thoại phải đủ 10 chữ số!";
+        } else delete next.phone;
+      }
+      return next;
+    });
   }
 
-  function handleCreateClass() {
-    if (!subjectName.trim() || !date || !startTime || !endTime) return;
-
-    const newClass: ClassItem = {
-      id: classCode,
-      code: classCode,
-      name: subjectName.trim(),
-      date,
-      time: `${startTime} - ${endTime}`,
-      status: "upcoming",
-      studentCount: 0,
-      groupCount: 0,
-    };
-
-    setClassesList((prev) => [...prev, newClass]);
-    setRightPanelView("result");
+  function getStudentFormErrors(form: StudentForm): StudentFormErrors {
+    const errors: StudentFormErrors = {};
+    if (!form.fullName.trim()) {
+      errors.fullName = "Vui lòng nhập họ và tên!";
+    } else if (!/^[\p{L}\s]+$/u.test(form.fullName.trim())) {
+      errors.fullName = "Họ tên chỉ được chứa chữ cái, không được chứa số!";
+    }
+    if (!form.studentId.trim()) {
+      errors.studentId = "Vui lòng nhập mã số sinh viên!";
+    } else if (!/^\d{11}$/.test(form.studentId.trim())) {
+      errors.studentId = "Mã số sinh viên phải đúng 11 chữ số!";
+    }
+    if (
+      form.email.trim() &&
+      !/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(form.email.trim())
+    ) {
+      errors.email = "Email phải đúng định dạng @gmail.com!";
+    }
+    if (form.phone.trim() && !/^\d{10}$/.test(form.phone.trim())) {
+      errors.phone = "Số điện thoại phải đủ 10 chữ số!";
+    }
+    return errors;
   }
 
-  function handleCopy(text: string, type: "code" | "link") {
-    navigator.clipboard?.writeText(text);
-    setCopied(type);
-    setTimeout(() => setCopied(null), 1500);
+  function handleValidateAndAddStudent() {
+    const errors = getStudentFormErrors(studentForm);
+    setStudentErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setClassesList((previous) =>
+      previous.map((classItem) =>
+        classItem.id === targetClassId
+          ? { ...classItem, studentCount: classItem.studentCount + 1 }
+          : classItem,
+      ),
+    );
+    setShowAddStudentModal(false);
   }
 
-  function handleCreateAnother() {
-    setSubjectName("");
-    setDescription("");
-    setDate("");
-    setStartTime("");
-    setEndTime("");
-    setClassCode(generateUniqueClassCode(existingClassCodes));
+  function handleOpenEditClass(classItem: HomeClassItem) {
+    setEditingClassId(classItem.id);
+    setSubjectName(classItem.name);
+    setClassCode(classItem.code);
+    setSessionCount(String(classItem.sessionCount));
+    setSessionError(null);
+    setStartTime(classItem.startTime);
+    setEndTime(classItem.endTime);
+    setSelectedDays(classItem.weekdays);
     setRightPanelView("create");
   }
 
-  function handleAddStudent(classId: string) {
-    console.log("Thêm sinh viên vào lớp:", classId);
+  function resetForm() {
+    setEditingClassId(null);
+    setSubjectName("");
+    setSessionCount("");
+    setSessionError(null);
+    setStartTime("");
+    setEndTime("");
+    setSelectedDays([]);
+    setClassCode(
+      generateUniqueClassCode(classesList.map((classItem) => classItem.code)),
+    );
+    setRightPanelView("create");
   }
 
-  function handleEditClass(classId: string) {
-    console.log("Sửa lớp:", classId);
+  function handleSaveClass() {
+    const validSessionCount = validateSessionCount(sessionCount);
+    if (
+      !subjectName.trim() ||
+      !validSessionCount ||
+      !startTime ||
+      !endTime ||
+      selectedDays.length === 0
+    ) {
+      return;
+    }
+
+    const today = new Date();
+    const dateLabel = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+    if (editingClassId) {
+      setClassesList((previous) =>
+        previous.map((item) =>
+          item.id === editingClassId
+            ? {
+                ...item,
+                name: subjectName.trim(),
+                sessionCount: Number(sessionCount),
+                startTime,
+                endTime,
+                time: `${startTime} - ${endTime}`,
+                weekdays: selectedDays,
+              }
+            : item,
+        ),
+      );
+      setToastMessage("Chỉnh sửa thông tin lớp học thành công!");
+      setShowToast(true);
+      resetForm();
+      return;
+    }
+
+    const newClass: HomeClassItem = {
+      id: classCode,
+      code: classCode,
+      name: subjectName.trim(),
+      date: dateLabel,
+      time: `${startTime} - ${endTime}`,
+      startTime,
+      endTime,
+      status: "upcoming",
+      studentCount: 0,
+      groupCount: 0,
+      sessionCount: Number(sessionCount),
+      weekdays: selectedDays,
+    };
+    setClassesList((previous) => [...previous, newClass]);
+    setToastMessage("Tạo lớp học mới thành công!");
+    setShowToast(true);
+    setRightPanelView("result");
   }
 
-  function handleDeleteClass(classId: string) {
-    setClassesList((prev) => prev.filter((c) => c.id !== classId));
+  function toggleDay(day: string) {
+    setSelectedDays((previous) =>
+      previous.includes(day)
+        ? previous.filter((selectedDay) => selectedDay !== day)
+        : [...previous, day],
+    );
+  }
+
+  function handleSlideFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !activeSlideClassId) return;
+
+    setClassesList((previous) =>
+      previous.map((classItem) =>
+        classItem.id === activeSlideClassId
+          ? { ...classItem, slideFileName: file.name }
+          : classItem,
+      ),
+    );
+    alert(`Đã upload slide thành công cho lớp: ${file.name}`);
+  }
+
+  function handleCopy(value: "code" | "link") {
+    navigator.clipboard?.writeText(value === "code" ? classCode : joinLink);
+    setCopied(value);
+    window.setTimeout(() => setCopied(null), 1500);
   }
 
   return (
-    <div className={styles.page}>
-      {/* ---------- Topbar ---------- */}
-      <header className={styles.topBar}>
-        <div className={styles.topBarBrand}>
-          <Link href="/" className={styles.logoLink}>
-            <span className={styles.logoText}>
-              <img src="/Ai.png" alt="Logo" /> ClassBridge
-            </span>
-          </Link>
-        </div>
-        <div className={styles.topBarActions}>
-          <button
-            type="button"
-            className={styles.topBarIconButton}
-            aria-label="Thông báo"
-          >
-            <Bell size={19} />
-          </button>
-          <AccountMenu
-            onOpenAccountInfo={() => {
-              console.log("Mở thông tin tài khoản");
-            }}
-            onChangePassword={() => {
-              // TODO: mở form đổi mật khẩu
-              console.log("Đổi mật khẩu");
-            }}
-            onLogout={() => {
-              // TODO: gọi API/logic đăng xuất thật
-              console.log("Đăng xuất");
-            }}
-          />
-        </div>
-      </header>
+    <Layout
+      className={styles.page}
+      brandHref="/"
+      headerActions={<AccountMenu teacherName="" />}
+    >
+      <input
+        type="file"
+        ref={excelInputRef}
+        onChange={(event) => {
+          if (event.target.files?.[0]) {
+            alert(`Đã chọn file: ${event.target.files[0].name}`);
+          }
+        }}
+        accept=".xlsx, .xls, .csv"
+        style={{ display: "none" }}
+      />
+      <input
+        type="file"
+        ref={slideInputRef}
+        onChange={handleSlideFileChange}
+        accept=".ppt, .pptx, .pdf"
+        style={{ display: "none" }}
+      />
 
-      <div className={styles.body}>
-        {/* ---------- Sidebar ---------- */}
-        <aside className={styles.sidebar}>
-          <nav className={styles.navMenu}>
-            {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => handleNavigate(href)}
-                className={`${styles.navItem} ${
-                  pathname === href ? styles.navItemActive : ""
-                }`}
-              >
-                <Icon size={18} />
-                <span>{label}</span>
-              </button>
-            ))}
-
-            {/* Sử dụng class sidebarDivider để tạo thanh ngang */}
-            <div className={styles.sidebarDivider}>
-              <button
-                type="button"
-                onClick={() => handleNavigate(SETTING_NAV_ITEM.href)}
-                className={`${styles.navItem} ${
-                  pathname === SETTING_NAV_ITEM.href ? styles.navItemActive : ""
-                }`}
-              >
-                <SETTING_NAV_ITEM.icon size={18} />
-                <span>{SETTING_NAV_ITEM.label}</span>
-              </button>
-            </div>
-          </nav>
-        </aside>
-
-        {/* ---------- Main content ---------- */}
-        <div className={styles.twoColumn}>
-          {/* Cột 1: Lớp học của tôi */}
-          <section className={styles.classBox}>
-            <div className={styles.classBoxHeader}>
-              <h2 className={styles.sectionTitle}>Lớp học của tôi</h2>
-              <a href="#" className={styles.viewAll}>
-                Xem tất cả
-              </a>
-            </div>
-
-            {sortedClasses.length === 0 && (
-              <p className={styles.emptyText}>Chưa có dữ liệu lớp học.</p>
-            )}
-
-            {sortedClasses.map((c) => (
-              <div key={c.id} className={styles.classCard}>
-                <div className={styles.classCardTop}>
-                  <span className={styles.classIcon}>
-                    <BookOpen size={18} />
-                  </span>
-
-                  <div className={styles.classInfo}>
-                    <div className={styles.classTitle}>
-                      {c.code} - {c.name}
-                    </div>
-                    <div className={styles.classMeta}>
-                      {c.date} · {c.time}
-                    </div>
-                  </div>
-
-                  <span
-                    className={
-                      c.status === "ongoing"
-                        ? styles.statusOngoing
-                        : styles.statusUpcoming
-                    }
-                  >
-                    {c.status === "ongoing" ? "Đang diễn ra" : "Sắp diễn ra"}
-                  </span>
-                </div>
-
-                <div className={styles.classStats}>
-                  <div className={styles.statItem}>
-                    <div className={styles.statNumber}>{c.studentCount}</div>
-                    <div className={styles.statLabel}>Sinh viên</div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statNumber}>{c.groupCount}</div>
-                    <div className={styles.statLabel}>Nhóm câu hỏi</div>
-                  </div>
-                </div>
-
-                <div className={styles.classActions}>
-                  <button
-                    className={styles.actionBtn}
-                    title="Thêm sinh viên"
-                    onClick={() => handleAddStudent(c.id)}
-                  >
-                    <UserPlus size={15} />
-                  </button>
-                  <button
-                    className={styles.actionBtn}
-                    title="Sửa lớp"
-                    onClick={() => handleEditClass(c.id)}
-                  >
-                    <Pencil size={15} />
-                  </button>
-                  <button
-                    className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
-                    title="Xóa lớp"
-                    onClick={() => handleDeleteClass(c.id)}
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </section>
-
-          {/* Cột 2: Tạo lớp học / Kết quả */}
-          <section className={styles.formCard}>
-            {rightPanelView === "create" ? (
-              <>
-                <h2 className={styles.sectionTitle}>Tạo lớp học mới</h2>
-                <label className={styles.label}>
-                  Tên môn học <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Vui lòng nhập tên môn học"
-                  value={subjectName}
-                  onChange={(e) => setSubjectName(e.target.value)}
-                />
-                <label className={styles.label}>
-                  Mã lớp <span className={styles.required}>*</span>
-                </label>
-                <div className={styles.codeRow}>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={classCode}
-                    readOnly
-                  />
-                  <button
-                    type="button"
-                    className={styles.regenerateBtn}
-                    onClick={handleRegenerateCode}
-                    title="Tạo mã khác"
-                  >
-                    <RefreshCw size={16} />
-                  </button>
-                </div>
-                <p className={styles.helperText}>
-                  Mã này do hệ thống tự sinh và đảm bảo không trùng với bất kỳ
-                  lớp nào khác.
-                </p>
-                <label className={styles.label}>
-                  Thời gian <span className={styles.required}>*</span>
-                </label>
-                <div className={styles.timeRow}>
-                  <input
-                    type="date"
-                    className={styles.input}
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                  <input
-                    type="time"
-                    className={styles.input}
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                  />
-                  <span className={styles.timeDash}>-</span>
-                  <input
-                    type="time"
-                    className={styles.input}
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                  />
-                </div>
-                <label className={styles.label}>Mô tả (tùy chọn)</label>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Ví dụ: Introduction to Software Testing"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <button
-                  className={styles.createBtn}
-                  onClick={handleCreateClass}
-                >
-                  Tạo lớp học
-                </button>
-              </>
-            ) : (
-              <>
-                <h2 className={styles.sectionTitle}>Đã tạo lớp học</h2>
-                <p className={styles.resultInlineSubtitle}>
-                  Bạn hãy chia sẻ mã lớp, link hoặc mã QR này cho sinh viên để
-                  tham gia lớp học.
-                </p>
-                <div className={styles.inlineResultCenter}>
-                  <div className={styles.bigQrWrap}>
-                    <QRCodeSVG
-                      value={generateQrPayload(classCode)}
-                      size={220}
-                    />
-                  </div>
-                  <div className={styles.bigCodeLabel}>Mã lớp học</div>
-                  <div className={styles.bigCodeRow}>
-                    <span className={styles.bigCode}>{classCode}</span>
-                    <button
-                      className={styles.copyIconBtn}
-                      onClick={() => handleCopy(classCode, "code")}
-                    >
-                      {copied === "code" ? (
-                        <Check size={16} />
-                      ) : (
-                        <Copy size={16} />
-                      )}
-                    </button>
-                  </div>
-                  <div className={styles.linkRow}>
-                    <span className={styles.linkText}>{joinLink}</span>
-                    <button
-                      className={styles.copyIconBtn}
-                      onClick={() => handleCopy(joinLink, "link")}
-                    >
-                      {copied === "link" ? (
-                        <Check size={16} />
-                      ) : (
-                        <Copy size={16} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <button
-                  className={styles.createBtn}
-                  onClick={handleCreateAnother}
-                >
-                  Tạo lớp học khác
-                </button>
-              </>
-            )}
-          </section>
-        </div>
+      <div className={styles.twoColumn}>
+        <HomeMainPage
+          classes={classesList}
+          onUploadSlide={(classId) => {
+            setActiveSlideClassId(classId);
+            slideInputRef.current?.click();
+          }}
+          onAddStudent={(classId) => {
+            setTargetClassId(classId);
+            setStudentForm(EMPTY_STUDENT_FORM);
+            setStudentErrors({});
+            setShowAddStudentModal(true);
+          }}
+          onEditClass={handleOpenEditClass}
+          onDeleteClass={(classId) =>
+            setClassesList((previous) =>
+              previous.filter((classItem) => classItem.id !== classId),
+            )
+          }
+        />
+        <HomeClassForm
+          view={rightPanelView}
+          editingClassId={editingClassId}
+          subjectName={subjectName}
+          classCode={classCode}
+          sessionCount={sessionCount}
+          startTime={startTime}
+          endTime={endTime}
+          selectedDays={selectedDays}
+          sessionError={sessionError}
+          copied={copied}
+          joinLink={joinLink}
+          qrPayload={generateQrPayload(classCode)}
+          onSubjectNameChange={setSubjectName}
+          onSessionCountChange={(value) => {
+            setSessionCount(value);
+            validateSessionCount(value);
+          }}
+          onValidateSessionCount={validateSessionCount}
+          onStartTimeChange={setStartTime}
+          onEndTimeChange={setEndTime}
+          onToggleDay={toggleDay}
+          onRegenerateCode={() =>
+            setClassCode(
+              generateUniqueClassCode(
+                classesList.map((classItem) => classItem.code),
+              ),
+            )
+          }
+          onImportSchedule={() => excelInputRef.current?.click()}
+          onSave={handleSaveClass}
+          onReset={resetForm}
+          onCopy={handleCopy}
+        />
       </div>
-    </div>
+
+      {showAddStudentModal && (
+        <AddStudentModal
+          form={studentForm}
+          errors={studentErrors}
+          onClose={() => setShowAddStudentModal(false)}
+          onChange={handleStudentFormChange}
+          onSubmit={handleValidateAndAddStudent}
+        />
+      )}
+
+      {showToast && (
+        <div className={styles.toastOverlay} onClick={() => setShowToast(false)}>
+          <div className={styles.toastBox} onClick={(event) => event.stopPropagation()}>
+            <span className={styles.toastSuccessIcon}>
+              <CheckCircle2 size={22} />
+            </span>
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+    </Layout>
   );
 }

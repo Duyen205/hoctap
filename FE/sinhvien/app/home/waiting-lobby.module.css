@@ -1,0 +1,322 @@
+.page {
+  display: flex;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 24px;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(47, 111, 237, 0.07), transparent 48%),
+    #f6f8fc;
+  color: #172033;
+  font-family: inherit;
+}
+
+.backButton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid #e4eaf3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #65748b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.backButton:hover {
+  border-color: #cbdafa;
+  color: #2f6fed;
+}
+
+.lobbyCard {
+  display: flex;
+  width: min(100%, 540px);
+  flex-direction: column;
+  align-items: center;
+  padding: 34px 38px 30px;
+  border: 1px solid #e5eaf2;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 24px 60px rgba(30, 52, 91, 0.08),
+    0 3px 10px rgba(30, 52, 91, 0.03);
+  text-align: center;
+}
+
+.waitingIllustration {
+  position: relative;
+  display: grid;
+  width: 104px;
+  height: 104px;
+  place-items: center;
+  margin: 0 0 20px;
+}
+
+.orbit {
+  position: absolute;
+  border: 1px solid rgba(47, 111, 237, 0.13);
+  border-radius: 50%;
+}
+
+.orbitOne {
+  inset: 7px;
+}
+
+.orbitTwo {
+  inset: 0;
+  border-style: dashed;
+}
+
+.clockIcon {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border: 1px solid #dce7ff;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #edf3ff, #f8faff);
+  color: #2f6fed;
+  box-shadow: 0 7px 18px rgba(47, 111, 237, 0.1);
+}
+
+.waitingIndicator {
+  position: absolute;
+  right: 8px;
+  bottom: 10px;
+  width: 13px;
+  height: 13px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: #f4aa39;
+  box-shadow: 0 0 0 3px rgba(244, 170, 57, 0.16);
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid #f5e6c8;
+  border-radius: 999px;
+  background: #fff9ed;
+  color: #a66a11;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f4aa39;
+  animation: waitingPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes waitingPulse {
+  50% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 4px rgba(244, 170, 57, 0.14);
+  }
+}
+
+.title {
+  margin: 15px 0 8px;
+  color: #172033;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.description {
+  max-width: 390px;
+  margin: 0;
+  color: #6b7890;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.classSummary {
+  width: 100%;
+  margin: 25px 0 21px;
+  padding: 17px 18px 0;
+  border: 1px solid #e9edf4;
+  border-radius: 15px;
+  background: #fbfcfe;
+  text-align: left;
+}
+
+.summaryHeader {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #ebeff5;
+  color: #8a96a8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.summaryIcon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 9px;
+  background: #edf3ff;
+  color: #2f6fed;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1f5;
+  color: #8a96a8;
+  font-size: 11px;
+}
+
+.summaryRow strong {
+  color: #263449;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.expectedTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.expectedTime svg {
+  flex: 0 0 auto;
+  color: #2f6fed;
+}
+
+.waitingFor {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 0 15px;
+  color: #748198;
+  font-size: 11px;
+}
+
+.waitingFor strong {
+  color: #35435a;
+  font-weight: 700;
+}
+
+.avatar {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e9effb;
+  color: #3a62a6;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.leaveButton {
+  display: inline-flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 18px;
+  border: 1px solid #e3e8f0;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #536177;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.leaveButton:hover {
+  border-color: #fecaca;
+  background: #fff7f7;
+  color: #dc4545;
+}
+
+.backButton:focus-visible,
+.leaveButton:focus-visible {
+  outline: 3px solid rgba(47, 111, 237, 0.28);
+  outline-offset: 2px;
+}
+
+.footerNote {
+  margin: 13px 0 0;
+  color: #9aa5b5;
+  font-size: 10px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 58px 16px 24px;
+  }
+
+  .backButton {
+    top: 0;
+    left: 16px;
+  }
+
+  .lobbyCard {
+    padding: 27px 19px 23px;
+    border-radius: 20px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .classSummary {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+
+  .summaryRow {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .summaryRow strong {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statusDot {
+    animation: none;
+  }
+
+  .backButton,
+  .leaveButton {
+    transition: none;
+  }
+}

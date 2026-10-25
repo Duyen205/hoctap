@@ -7,16 +7,9 @@ import {
   generateUniqueClassCode,
   generateQrPayload,
 } from "../home/classCodeGenerator";
-import {
-  Home,
-  BookOpen,
-  BarChart2,
-  Settings,
-  RefreshCw,
-  MessageSquare,
-  FileText,
-} from "lucide-react";
-import Link from "next/link";
+import { RefreshCw } from "lucide-react";
+import Layout from "../components/Layout";
+import AccountMenu from "../account-logo/AccountMenu";
 
 // TODO: lấy danh sách mã lớp đang có thật từ database khi tích hợp API,
 // để đảm bảo mã mới sinh ra không trùng với bất kỳ lớp nào.
@@ -49,48 +42,12 @@ export default function CreateClass() {
   }
 
   return (
-    <div className={styles.page}>
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.logoArea}>
-          <Link href="/home" className={styles.logoLink}>
-            <span className={styles.logoText}>
-              <img src="/Ai.png" alt="Logo" /> ClassBridge
-            </span>
-          </Link>
-        </div>
-        <nav className={styles.nav}>
-          <Link href="/home" className={styles.navItem}>
-            <Home size={18} />
-            <span>Home</span>
-          </Link>
-          <Link href="/home" className={styles.navItem}>
-            <BookOpen size={18} />
-            <span>My class</span>
-          </Link>
-          <Link href="/question" className={styles.navItem}>
-            <MessageSquare size={18} />
-            <span>Question center</span>
-          </Link>
-          <Link href="/createroom" className={styles.navItem}>
-            <FileText size={18} />
-            <span>Lesson Summary</span>
-          </Link>
-          <Link href="/home" className={styles.navItem}>
-            <BarChart2 size={18} />
-            <span>Report</span>
-          </Link>
-          <div className={styles.sidebarDivider}>
-            <Link href="/home" className={styles.navItem}>
-              <Settings size={18} />
-              <span>Setting</span>
-            </Link>
-          </div>
-        </nav>
-      </aside>
-
-      {/* Nội dung chính */}
-      <main className={styles.main}>
+    <Layout
+      brandHref="/home"
+      className={styles.page}
+      headerActions={<AccountMenu teacherName="Lecturer" />}
+    >
+      <div className={styles.main}>
         <h1 className={styles.title}>Tạo lớp học mới</h1>
 
         <div className={styles.formCard}>
@@ -190,7 +147,7 @@ export default function CreateClass() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }

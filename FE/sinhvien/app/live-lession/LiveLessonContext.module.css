@@ -1,0 +1,60 @@
+.floatingRecordingBar {
+  position: fixed;
+  right: 96px;
+  bottom: 24px;
+  z-index: 9998;
+  display: flex;
+  max-width: calc(100vw - 32px);
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #dbe4f2;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.16);
+  color: #172033;
+  font-size: 13px;
+}
+
+.recordingIndicator {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+}
+
+.recordingMessage {
+  white-space: nowrap;
+}
+
+.returnButton {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 9px;
+  background: #2f6fed;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.returnButton:hover {
+  background: #2459c5;
+}
+
+@media (max-width: 600px) {
+  .floatingRecordingBar {
+    right: 16px;
+    bottom: 84px;
+    left: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .recordingMessage {
+    white-space: normal;
+  }
+}

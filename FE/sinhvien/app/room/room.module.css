@@ -5,15 +5,8 @@
   flex-direction: column;
   background-color: #060913;
   color: #ffffff;
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    sans-serif;
-  overflow: hidden;
+  font-family: common ligatures;
 }
-
-/* ===================== TOP BAR ===================== */
 .topBar {
   flex-shrink: 0;
   display: flex;

@@ -1,37 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import styles from "./setting.module.css";
 import AccountMenu from "../account/AccountMenu";
+import Layout from "../components/Layout";
 import {
-  Home,
-  Radio,
-  MessageSquare,
-  FileText,
-  BarChart2,
   Settings,
   Monitor,
   Lock,
   Globe,
   Languages,
   ChevronDown,
-  BookOpen
 } from "lucide-react";
-
-const NAV_ITEMS = [
-  { label: "Home", href: "/home", icon: Home },
-   { label: "My class", href: "/my-class", icon: BookOpen },
-  { label: "Live lessons", href: "/live-lession", icon: Radio },
-  { label: "Question grouping", href: "/question", icon: MessageSquare },
-  { label: "Lesson Summary", href: "/summary", icon: FileText },
-];
-
-const SETTING_NAV_ITEM = {
-  label: "Setting",
-  href: "/setting",
-  icon: Settings,
-};
 
 // TODO: lấy cài đặt thật của giảng viên từ API khi tích hợp thật, và gửi lên
 // server khi bấm "Save changes" thay vì chỉ giữ trong state cục bộ.
@@ -111,8 +91,6 @@ function SelectField({
 }
 
 export default function SettingPage() {
-  const router = useRouter();
-  const pathname = usePathname();
 const [teacherName, setTeacherName] = useState("");
   const [interfaceLanguage, setInterfaceLanguage] = useState("en");
   const [answerTranslation, setAnswerTranslation] = useState("both");
@@ -149,17 +127,12 @@ const [teacherName, setTeacherName] = useState("");
   }
 
   return (
-    <div className={styles.page}>
-      <header className={styles.topbar}>
-        <div className={styles.logoArea}>
-          <span className={styles.logoText}>
-            <img src="/Ai.png" alt="Logo" /> ClassBridge
-          </span>
-        </div>
-
-        <div className={styles.topbarActions}>
-          <button className={styles.bellButton}>🔔</button>
-          <AccountMenu
+    <Layout
+      className={styles.page}
+      bodyClassName={styles.body}
+      mainClassName={styles.main}
+      headerActions={
+        <AccountMenu
             teacherName={teacherName}
             onSaveAccountInfo={(info) => {
               // TODO: gọi API cập nhật thông tin tài khoản thật ở đây
@@ -174,41 +147,9 @@ const [teacherName, setTeacherName] = useState("");
               // TODO: gọi API/logic đăng xuất thật
               console.log("Đăng xuất");
             }}
-          />
-        </div>
-      </header>
-
-      <div className={styles.body}>
-        <aside className={styles.sidebar}>
-          <nav className={styles.navMenu}>
-            {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
-              <button
-                key={href}
-                type="button"
-                onClick={() => router.push(href)}
-                className={`${styles.navItem} ${pathname === href ? styles.navItemActive : ""}`}
-              >
-                <Icon size={18} />
-                <span>{label}</span>
-              </button>
-            ))}
-            <div className={styles.sidebarDivider}>
-              <button
-                type="button"
-                onClick={() => router.push(SETTING_NAV_ITEM.href)}
-                className={`${styles.navItem} ${
-                  pathname === SETTING_NAV_ITEM.href ? styles.navItemActive : ""
-                }`}
-              >
-                <SETTING_NAV_ITEM.icon size={18} />
-                <span>{SETTING_NAV_ITEM.label}</span>
-              </button>
-            </div>
-          </nav>
-        </aside>
-
-        {/* Nội dung chính */}
-        <main className={styles.main}>
+        />
+      }
+    >
           <div className={styles.mainScroll}>
             <div className={styles.settingsStack}>
             {/* ---------- General ---------- */}
@@ -349,8 +290,6 @@ const [teacherName, setTeacherName] = useState("");
               Save changes
             </button>
           </div>
-        </main>
-      </div>
-    </div>
+    </Layout>
   );
 }

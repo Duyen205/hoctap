@@ -1,20 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./dashboard.module.css";
+import Layout from "../components/Layout";
 import {
-  GraduationCap,
-  Home,
   Users,
   User,
   UsersRound,
+  GraduationCap,
   BookOpen,
-  ChevronDown,
   ChevronRight,
-  Search,
-  Bell,
-  Globe,
   Plus,
   Activity as ActivityIcon,
   Clock,
@@ -22,42 +18,6 @@ import {
   Layers,
   TrendingUp,
 } from "lucide-react";
-
-/* ------------------------------------------------------------------ */
-/* Sidebar — điều hướng cho role Admin                                  */
-/* ------------------------------------------------------------------ */
-
-type NavChild = { label: string; href: string };
-type NavGroup = {
-  key: string;
-  label: string;
-  href?: string;
-  icon: React.ComponentType<{ size?: number }>;
-  children?: NavChild[];
-};
-
-const NAV_GROUPS: NavGroup[] = [
-  { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: Home },
-  { key: "accountManagement", label: "Account Management", href: "/account", icon: Users },
-  {
-    key: "userManagement",
-    label: "User Management",
-    icon: UsersRound,
-    children: [
-      { label: "Lecturers", href: "/admin/lecturers" },
-      { label: "Students", href: "/admin/students" },
-    ],
-  },
-  {
-    key: "classManagement",
-    label: "Class Management",
-    icon: BookOpen,
-    children: [
-      { label: "All Classes", href: "/admin/classes" },
-      { label: "Enrollments", href: "/admin/enrollments" },
-    ],
-  },
-];
 
 /* ------------------------------------------------------------------ */
 /* Types — dữ liệu thật từ API                                          */
@@ -198,22 +158,7 @@ async function fetchDashboardData(): Promise<DashboardData> {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const pathname = usePathname();
-
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    accountManagement: true,
-    userManagement: true,
-    classManagement: false,
-  });
-
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [language, setLanguage] = useState<"EN" | "VI">("EN");
-  const langMenuRef = useRef<HTMLDivElement>(null);
-
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Đồng hồ thật
   const [now, setNow] = useState<Date | null>(null);
@@ -246,23 +191,6 @@ export default function AdminDashboardPage() {
     loadData();
   }, [loadData]);
 
-  // Đóng dropdown khi click ngoài
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
-        setIsLangMenuOpen(false);
-      }
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const dateLabel = useMemo(() => {
     if (!now) return "";
     return now.toLocaleDateString(language === "VI" ? "vi-VN" : "en-US", {
@@ -283,172 +211,21 @@ export default function AdminDashboardPage() {
   }, [now, language]);
 
   const distributionTotal = data.distribution
-    ? data.distribution.admin + data.distribution.lecturer + data.distribution.student
+    ? data.distribution.admin +
+      data.distribution.lecturer +
+      data.distribution.student
     : 0;
-
-  function toggleGroup(key: string) {
-    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
-
-  function handleNavigate(href?: string) {
-    if (!href || href === pathname) return;
-    router.push(href);
-  }
 
   const stats = data.stats;
 
   return (
-    <div className={styles.page}>
-      {/* ---------- Sidebar ---------- */}
-      <aside className={styles.sidebar}>
-        <div className={styles.logoArea}>
-          <span className={styles.logoIcon}>
-            <GraduationCap size={20} />
-          </span>
-          <span className={styles.logoText}>ClassBridge</span>
-        </div>
-
-        <nav className={styles.navMenu}>
-          {NAV_GROUPS.map((group) => {
-            const Icon = group.icon;
-            if (!group.children) {
-              return (
-                <button
-                  key={group.key}
-                  type="button"
-                  onClick={() => handleNavigate(group.href)}
-                  className={`${styles.navItem} ${
-                    pathname === group.href ? styles.navItemActive : ""
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{group.label}</span>
-                </button>
-              );
-            }
-
-            const isOpen = openGroups[group.key];
-            return (
-              <div key={group.key} className={styles.navGroup}>
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.key)}
-                  className={styles.navItem}
-                >
-                  <Icon size={18} />
-                  <span>{group.label}</span>
-                  <ChevronDown
-                    size={15}
-                    className={`${styles.navChevron} ${isOpen ? styles.navChevronOpen : ""}`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className={styles.navChildren}>
-                    {group.children.map((child) => (
-                      <button
-                        key={child.href}
-                        type="button"
-                        onClick={() => handleNavigate(child.href)}
-                        className={`${styles.navItemChild} ${
-                          pathname === child.href ? styles.navItemChildActive : ""
-                        }`}
-                      >
-                        <span>{child.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* ---------- Nội dung chính ---------- */}
-      <div className={styles.contentArea}>
-        {/* ---------- Topbar ---------- */}
-        <header className={styles.topbar}>
-          <label className={styles.searchBox}>
-            <Search size={16} />
-            <input
-              type="search"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </label>
-
-          <div className={styles.topbarActions}>
-            <button type="button" className={styles.iconButton} aria-label="Notifications">
-              <Bell size={18} />
-            </button>
-
-            <div className={styles.dropdownWrap} ref={langMenuRef}>
-              <button
-                type="button"
-                className={styles.langButton}
-                onClick={() => setIsLangMenuOpen((v) => !v)}
-              >
-                <Globe size={15} />
-                <span>{language}</span>
-                <ChevronDown size={13} />
-              </button>
-              {isLangMenuOpen && (
-                <div className={styles.dropdownMenu}>
-                  {(["EN", "VI"] as const).map((lang) => (
-                    <button
-                      key={lang}
-                      type="button"
-                      className={`${styles.dropdownItem} ${
-                        language === lang ? styles.dropdownItemActive : ""
-                      }`}
-                      onClick={() => {
-                        setLanguage(lang);
-                        setIsLangMenuOpen(false);
-                      }}
-                    >
-                      {lang === "EN" ? "English" : "Tiếng Việt"}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <span className={styles.topbarDivider} />
-
-            <div className={styles.dropdownWrap} ref={profileMenuRef}>
-              <button
-                type="button"
-                className={styles.profileButton}
-                onClick={() => setIsProfileMenuOpen((v) => !v)}
-              >
-                <span className={styles.profileAvatar}>
-                  {(data.admin.name || "A").slice(0, 1).toUpperCase()}
-                </span>
-                <span className={styles.profileName}>
-                  {data.admin.name || "Admin"}
-                </span>
-                <ChevronDown size={13} />
-              </button>
-              {isProfileMenuOpen && (
-                <div className={styles.dropdownMenu}>
-                  <button type="button" className={styles.dropdownItem}>
-                    Profile
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.dropdownItem}
-                    onClick={() => router.push("/logout")}
-                  >
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <main className={styles.main}>
+    <Layout
+      mainClassName={`${styles.page} ${styles.main}`}
+      language={language}
+      onLanguageChange={setLanguage}
+      adminName={data.admin.name}
+      onLogout={() => router.push("/logout")}
+    >
           {/* ---------- Banner chào mừng ---------- */}
           <section className={styles.welcomeBanner}>
             <div>
@@ -456,7 +233,8 @@ export default function AdminDashboardPage() {
                 Welcome back, {data.admin.name || "Admin"}!
               </h1>
               <p className={styles.welcomeSubtitle}>
-                Manage accounts, users, classes, questions and more in ClassBridge.
+                Manage accounts, users, classes, questions and more in
+                ClassBridge.
               </p>
             </div>
             <div className={styles.welcomeDateTime}>
@@ -468,10 +246,20 @@ export default function AdminDashboardPage() {
           </section>
 
           {error && (
-            <div className={styles.panel} style={{ borderColor: "var(--danger)" }}>
-              <p className={styles.emptyText} style={{ color: "var(--danger)" }}>
+            <div
+              className={styles.panel}
+              style={{ borderColor: "var(--danger)" }}
+            >
+              <p
+                className={styles.emptyText}
+                style={{ color: "var(--danger)" }}
+              >
                 {error}{" "}
-                <button type="button" className={styles.viewAllLink} onClick={loadData}>
+                <button
+                  type="button"
+                  className={styles.viewAllLink}
+                  onClick={loadData}
+                >
                   Thử lại
                 </button>
               </p>
@@ -610,10 +398,15 @@ export default function AdminDashboardPage() {
               {loading ? (
                 <p className={styles.loadingText}>Loading...</p>
               ) : !data.distribution || distributionTotal === 0 ? (
-                <p className={styles.emptyText}>Chưa có dữ liệu phân bổ tài khoản.</p>
+                <p className={styles.emptyText}>
+                  Chưa có dữ liệu phân bổ tài khoản.
+                </p>
               ) : (
                 <div className={styles.distributionRow}>
-                  <DonutChart distribution={data.distribution} total={distributionTotal} />
+                  <DonutChart
+                    distribution={data.distribution}
+                    total={distributionTotal}
+                  />
                   <div className={styles.distributionLegend}>
                     <LegendRow
                       color={styles.legendDotBlue}
@@ -657,7 +450,9 @@ export default function AdminDashboardPage() {
               {loading ? (
                 <p className={styles.loadingText}>Loading...</p>
               ) : data.activities.length === 0 ? (
-                <p className={styles.emptyText}>Chưa có hoạt động nào được ghi nhận.</p>
+                <p className={styles.emptyText}>
+                  Chưa có hoạt động nào được ghi nhận.
+                </p>
               ) : (
                 <div className={styles.activityList}>
                   {data.activities.map((a) => (
@@ -682,13 +477,17 @@ export default function AdminDashboardPage() {
                   <TrendingUp size={16} className={styles.panelTitleIcon} />
                   System Overview
                 </h2>
-                <span style={{ fontSize: 12, color: "var(--text-faint)" }}>Last 7 days</span>
+                <span style={{ fontSize: 12, color: "var(--text-faint)" }}>
+                  Last 7 days
+                </span>
               </div>
 
               {loading ? (
                 <p className={styles.loadingText}>Loading...</p>
               ) : data.systemOverview.length === 0 ? (
-                <p className={styles.emptyText}>Chưa có dữ liệu tổng quan hệ thống.</p>
+                <p className={styles.emptyText}>
+                  Chưa có dữ liệu tổng quan hệ thống.
+                </p>
               ) : (
                 <SystemOverviewChart points={data.systemOverview} />
               )}
@@ -837,9 +636,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </section>
-        </main>
-      </div>
-    </div>
+    </Layout>
   );
 }
 
@@ -891,7 +688,9 @@ function DonutChart({
     <div className={styles.donutWrap}>
       <div className={styles.donut} style={{ background: gradient }}>
         <div className={styles.donutHole}>
-          <span className={styles.donutTotal}>{total.toLocaleString("en-US")}</span>
+          <span className={styles.donutTotal}>
+            {total.toLocaleString("en-US")}
+          </span>
           <span className={styles.donutTotalLabel}>Total Accounts</span>
         </div>
       </div>
@@ -931,10 +730,7 @@ function SystemOverviewChart({ points }: { points: SystemOverviewPoint[] }) {
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
-  const maxY = Math.max(
-    ...points.flatMap((p) => [p.accounts, p.questions]),
-    1
-  );
+  const maxY = Math.max(...points.flatMap((p) => [p.accounts, p.questions]), 1);
   const niceMax = Math.ceil(maxY / 100) * 100 || 100;
 
   const xStep = points.length > 1 ? chartW / (points.length - 1) : 0;
@@ -949,7 +745,9 @@ function SystemOverviewChart({ points }: { points: SystemOverviewPoint[] }) {
     .map((p, i) => `${i === 0 ? "M" : "L"} ${toX(i)} ${toY(p.questions)}`)
     .join(" ");
 
-  const gridYs = [0, 0.25, 0.5, 0.75, 1].map((t) => padding.top + chartH * (1 - t));
+  const gridYs = [0, 0.25, 0.5, 0.75, 1].map(
+    (t) => padding.top + chartH * (1 - t),
+  );
 
   return (
     <div className={styles.chartWrap}>
@@ -988,7 +786,12 @@ function SystemOverviewChart({ points }: { points: SystemOverviewPoint[] }) {
         })}
 
         <path d={accountsPath} fill="none" stroke="#2563eb" strokeWidth="2.5" />
-        <path d={questionsPath} fill="none" stroke="#22c55e" strokeWidth="2.5" />
+        <path
+          d={questionsPath}
+          fill="none"
+          stroke="#22c55e"
+          strokeWidth="2.5"
+        />
 
         {points.map((p, i) => (
           <g key={i}>
@@ -1013,11 +816,15 @@ function SystemOverviewChart({ points }: { points: SystemOverviewPoint[] }) {
 
       <div className={styles.chartLegend}>
         <span className={styles.chartLegendItem}>
-          <span className={`${styles.chartLegendDot} ${styles.chartLegendDotAccounts}`} />
+          <span
+            className={`${styles.chartLegendDot} ${styles.chartLegendDotAccounts}`}
+          />
           Accounts
         </span>
         <span className={styles.chartLegendItem}>
-          <span className={`${styles.chartLegendDot} ${styles.chartLegendDotQuestions}`} />
+          <span
+            className={`${styles.chartLegendDot} ${styles.chartLegendDotQuestions}`}
+          />
           Questions
         </span>
       </div>

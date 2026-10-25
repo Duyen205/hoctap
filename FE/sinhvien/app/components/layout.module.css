@@ -1,0 +1,148 @@
+.layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #ffffff;
+  color: #172033;
+  font-family: common ligatures;
+}
+
+.header {
+  z-index: 10;
+  display: flex;
+  min-height: 64px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px;
+  background: #070b1c;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.brand img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notificationButton,
+.avatarPlaceholder {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #263252;
+  border-radius: 50%;
+  background: #111a33;
+  color: #d3dcf0;
+}
+
+.notificationButton {
+  cursor: pointer;
+}
+
+.sidebar {
+  width: 215px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 20px;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px;
+  padding: 0 12px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.navItem:hover {
+  background: #f1f5f9;
+  color: #172033;
+}
+
+.navItemActive {
+  background: #e7efff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.sidebarDivider {
+  margin-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}
+
+.body {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+@media (max-width: 700px) {
+  .header {
+    min-height: 58px;
+    padding: 0 14px;
+  }
+
+  .sidebar {
+    width: 68px;
+    padding: 14px 8px;
+  }
+
+  .navItem {
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+  }
+
+  .navItem span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}

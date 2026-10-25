@@ -9,56 +9,27 @@ import {
   VideoOff,
   ScreenShare,
   Users,
-  MessageSquare,
-  PhoneOff,
   X,
-  Send,
-  Languages,
-  CircleHelp,
+  LayoutGrid,
+  BookOpen,
+  Calendar,
+  ChevronRight,
+  Maximize2,
+  Search,
 } from "lucide-react";
 import styles from "./room.module.css";
-
-interface ClassInfo {
-  name: string;
-  code: string;
-}
-
-interface CurrentUser {
-  id: string;
-  name: string;
-}
-
-interface Participant {
-  id: string;
-  name: string;
-  micOn: boolean;
-  camOn: boolean;
-  avatarUrl?: string;
-}
-
-interface CaptionLine {
-  id: string;
-  text: string;
-  time: string;
-}
-
-interface ChatMessage {
-  id: string;
-  sender: string;
-  text: string;
-  time: string;
-}
-
-const DEFAULT_CLASS_INFO: ClassInfo = {
-  name: "Lớp học chưa có tên",
-  code: "XXXX-000",
-};
-
-const MOCK_PARTICIPANTS: Participant[] = [
-  { id: "gv-1", name: "đ", micOn: true, camOn: true },
-  { id: "sv-2", name: "ff", micOn: false, camOn: true },
-  { id: "sv-3", name: "Tr", micOn: true, camOn: false },
-];
+import AccountMenu, { type AccountInfo } from "../account-logo/AccountMenu";
+import Layout from "../components/Layout";
+import ActiveClassRoom from "./ActiveClassRoom";
+import SessionLobby from "./SessionLobby";
+import type {
+  CaptionLine,
+  ChatMessage,
+  ClassInfo,
+  ClassFilterTab,
+  Participant,
+  RoomViewState,
+} from "./types";
 
 function getInitials(name: string) {
   return name
@@ -76,37 +47,124 @@ function nowLabel() {
   });
 }
 
-export default function ClassroomPage() {
+export default function LiveSessionPage() {
   const router = useRouter();
 
-  const [classInfo] = useState<ClassInfo>(DEFAULT_CLASS_INFO);
+  const [viewState, setViewState] = useState<RoomViewState>("dashboard");
+  const [isLobbyOpen, setIsLobbyOpen] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState<CurrentUser>({
-    id: "me",
-    name: "ds",
-  });
+  // Dữ liệu thật từ API
+  const [classesList, setClassesList] = useState<ClassInfo[]>([]);
+  const [selectedClass, setSelectedClass] = useState<ClassInfo | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isLoadingClasses, setIsLoadingClasses] = useState<boolean>(true);
 
+  const [isSessionActive, setIsSessionActive] = useState(false);
+
+  const [teacherName, setTeacherName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+
+  const [filterTab, setFilterTab] = useState<ClassFilterTab>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchDate, setSearchDate] = useState("");
+
+  // 🌐 CẤU HÌNH GỌI API LẤY DỮ LIỆU THẬT TỪ BACKEND
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("user");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setCurrentUser({
-          id: parsed.id ?? "me",
-          name:
-            parsed.fullName ?? parsed.name ?? parsed.username ?? "Sinh viên",
-        });
+    async function fetchRealClassesData() {
+      setIsLoadingClasses(true);
+      let loadedClasses: ClassInfo[] = [];
+      try {
+        const response = await fetch("/api/classes");
+        if (response.ok) {
+          loadedClasses = await response.json();
+          setClassesList(loadedClasses);
+        } else {
+          setClassesList([]);
+        }
+      } catch (error) {
+        console.error("Lỗi khi kết nối API lấy danh sách lớp học thật:", error);
+        setClassesList([]);
+      } finally {
+        try {
+          const activeState = sessionStorage.getItem("isSessionActive");
+          const activeClassId = sessionStorage.getItem("selectedClassId");
+          const savedViewState = sessionStorage.getItem(
+            "viewState",
+          ) as RoomViewState | null;
+
+          if (
+            activeState === "true" &&
+            activeClassId &&
+            loadedClasses.length > 0
+          ) {
+            setIsSessionActive(true);
+            const foundClass = loadedClasses.find(
+              (classItem) => classItem.id === activeClassId,
+            );
+            if (foundClass) {
+              setSelectedClass(foundClass);
+              if (savedViewState === "room") setViewState("room");
+            }
+          }
+
+          const rawUser = localStorage.getItem("user");
+          if (rawUser) {
+            const parsed = JSON.parse(rawUser);
+            if (parsed.fullName || parsed.name || parsed.username) {
+              setTeacherName(
+                parsed.fullName ?? parsed.name ?? parsed.username,
+              );
+            }
+            if (parsed.avatarUrl) setAvatarUrl(parsed.avatarUrl);
+          }
+        } catch (error) {
+          console.error("Lỗi đọc bộ nhớ local:", error);
+        }
+        setIsLoadingClasses(false);
       }
-    } catch {
-      // Không đọc được thì giữ giá trị mặc định.
     }
+
+    fetchRealClassesData();
   }, []);
 
-  const [participants] = useState<Participant[]>(MOCK_PARTICIPANTS);
+  // Lấy danh sách sinh viên tham gia lớp học thật khi vào phòng
+  useEffect(() => {
+    if (!selectedClass || viewState !== "room") return;
 
-  const [micOn, setMicOn] = useState(false);
-  const [camOn, setCamOn] = useState(false);
+    async function fetchParticipantsRealData() {
+      try {
+        const res = await fetch(
+          `/api/classes/${selectedClass?.id}/participants`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setParticipants(data);
+        }
+      } catch (err) {
+        console.error("Lỗi lấy danh sách sinh viên trong lớp:", err);
+      }
+    }
+
+    fetchParticipantsRealData();
+  }, [selectedClass, viewState]);
+
+  const updateSessionStore = (
+    active: boolean,
+    classId: string,
+    view: RoomViewState,
+  ) => {
+    setIsSessionActive(active);
+    setViewState(view);
+    sessionStorage.setItem("isSessionActive", active ? "true" : "false");
+    sessionStorage.setItem("selectedClassId", classId);
+    sessionStorage.setItem("viewState", view);
+  };
+
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const lobbyVideoRef = useRef<HTMLVideoElement>(null);
+  const floatVideoRef = useRef<HTMLVideoElement>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
   async function ensureLocalStream() {
@@ -117,11 +175,11 @@ export default function ClassroomPage() {
         audio: true,
       });
       localStreamRef.current = stream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
-      stream.getVideoTracks().forEach((t) => (t.enabled = false));
-      stream.getAudioTracks().forEach((t) => (t.enabled = false));
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      if (lobbyVideoRef.current) lobbyVideoRef.current.srcObject = stream;
+      if (floatVideoRef.current) floatVideoRef.current.srcObject = stream;
+      stream.getVideoTracks().forEach((t) => (t.enabled = camOn));
+      stream.getAudioTracks().forEach((t) => (t.enabled = micOn));
       return stream;
     } catch (err) {
       console.error("Không truy cập được camera/mic:", err);
@@ -131,22 +189,28 @@ export default function ClassroomPage() {
 
   const toggleCam = async () => {
     const stream = await ensureLocalStream();
-    if (!stream) return;
     const next = !camOn;
-    stream.getVideoTracks().forEach((t) => (t.enabled = next));
     setCamOn(next);
+    if (stream) {
+      stream.getVideoTracks().forEach((t) => (t.enabled = next));
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      if (lobbyVideoRef.current) lobbyVideoRef.current.srcObject = stream;
+      if (floatVideoRef.current) floatVideoRef.current.srcObject = stream;
+    }
   };
 
   const toggleMic = async () => {
     const stream = await ensureLocalStream();
-    if (!stream) return;
     const next = !micOn;
-    stream.getAudioTracks().forEach((t) => (t.enabled = next));
     setMicOn(next);
+    if (stream) {
+      stream.getAudioTracks().forEach((t) => (t.enabled = next));
+    }
   };
 
   const [isSharing, setIsSharing] = useState(false);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
+  const floatScreenVideoRef = useRef<HTMLVideoElement>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
 
   const toggleShare = async () => {
@@ -161,9 +225,9 @@ export default function ClassroomPage() {
         video: true,
       });
       screenStreamRef.current = stream;
-      if (screenVideoRef.current) {
-        screenVideoRef.current.srcObject = stream;
-      }
+      if (screenVideoRef.current) screenVideoRef.current.srcObject = stream;
+      if (floatScreenVideoRef.current)
+        floatScreenVideoRef.current.srcObject = stream;
       stream.getVideoTracks()[0].addEventListener("ended", () => {
         screenStreamRef.current = null;
         setIsSharing(false);
@@ -174,22 +238,14 @@ export default function ClassroomPage() {
     }
   };
 
-  const [captionsVN, setCaptionsVN] = useState<CaptionLine[]>([]);
-  const [captionsEN, setCaptionsEN] = useState<CaptionLine[]>([]);
+  const activeSpeaker = participants.find((p) => p.isSpeaking);
 
-  function addCaptionLine(lang: "vi" | "en", text: string) {
-    const line: CaptionLine = {
-      id: crypto.randomUUID(),
-      text,
-      time: nowLabel(),
-    };
-    if (lang === "vi") setCaptionsVN((prev) => [...prev, line]);
-    else setCaptionsEN((prev) => [...prev, line]);
-  }
-
+  const [captionsVN] = useState<CaptionLine[]>([]);
+  const [captionsEN] = useState<CaptionLine[]>([]);
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(false);
+  const [showLeavePopup, setShowLeavePopup] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -202,12 +258,7 @@ export default function ClassroomPage() {
     if (!text) return;
     setMessages((prev) => [
       ...prev,
-      {
-        id: crypto.randomUUID(),
-        sender: currentUser.name,
-        text,
-        time: nowLabel(),
-      },
+      { id: crypto.randomUUID(), sender: teacherName, text, time: nowLabel() },
     ]);
     setChatInput("");
   };
@@ -218,375 +269,460 @@ export default function ClassroomPage() {
     if (!text) return;
     setQuestions((prev) => [
       ...prev,
-      {
-        id: crypto.randomUUID(),
-        sender: currentUser.name,
-        text,
-        time: nowLabel(),
-      },
+      { id: crypto.randomUUID(), sender: teacherName, text, time: nowLabel() },
     ]);
     setQuestionInput("");
   };
 
-  const handleLeave = () => {
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    window.location.assign("/home");
+  const handleClassCardAction = (cls: ClassInfo) => {
+    setSelectedClass(cls);
+    if (isSessionActive && selectedClass?.id === cls.id) {
+      updateSessionStore(true, cls.id, "room");
+      ensureLocalStream();
+    } else {
+      setIsLobbyOpen(true);
+      ensureLocalStream();
+    }
   };
 
-  useEffect(() => {
-    return () => {
-      localStreamRef.current?.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
+  const handleViewDetails = (cls: ClassInfo) => {
+    const params = new URLSearchParams({
+      classId: cls.id,
+      className: cls.name,
+      code: cls.code,
+    });
+    router.push(`/question?${params.toString()}`);
+  };
 
-  const [showQuestion, setShowQuestion] = useState(false);
-  const [showLeavePopup, setShowLeavePopup] = useState(false);
+  const enterRoomFromLobby = () => {
+    if (!selectedClass) return;
+    setIsLobbyOpen(false);
+    updateSessionStore(true, selectedClass.id, "room");
+    ensureLocalStream();
+  };
+
+  const returnToDashboard = () => {
+    if (!selectedClass) return;
+    updateSessionStore(true, selectedClass.id, "dashboard");
+  };
+
+  const handleEndClass = () => {
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
+    sessionStorage.removeItem("isSessionActive");
+    sessionStorage.removeItem("selectedClassId");
+    sessionStorage.removeItem("viewState");
+    setIsSessionActive(false);
+    setViewState("dashboard");
+    setShowLeavePopup(false);
+  };
+
+  const liveCount = classesList.filter((c) => c.status === "live").length;
+  const upcomingCount = classesList.filter(
+    (c) => c.status === "upcoming",
+  ).length;
+  const endedCount = classesList.filter((c) => c.status === "ended").length;
+
+  const filteredClasses = classesList.filter((cls) => {
+    const matchesFilter = filterTab === "all" ? true : cls.status === filterTab;
+    const matchesSearch =
+      cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cls.code.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDate = searchDate ? cls.date === searchDate : true;
+
+    return matchesFilter && matchesSearch && matchesDate;
+  });
+
+  if (viewState === "dashboard") {
+    return (
+      <Layout
+        className={styles.appShell}
+        mainClassName={styles.contentBody}
+        headerActions={
+          <>
+            <AccountMenu
+              teacherName={teacherName}
+              avatarUrl={avatarUrl}
+              onSaveAccountInfo={(info: AccountInfo) => {
+                if (info.username) setTeacherName(info.username);
+                if (info.avatarUrl) setAvatarUrl(info.avatarUrl);
+              }}
+              onSubmitPasswordChange={() => {
+                alert("Đổi mật khẩu thành công!");
+              }}
+              onLogout={() => {
+                localStorage.removeItem("user");
+                sessionStorage.clear();
+                router.push("/login");
+              }}
+            />
+          </>
+        }
+      >
+            <div className={styles.statsCardsGrid}>
+              <div
+                className={`${styles.statCard} ${filterTab === "live" ? styles.statCardActive : ""}`}
+                onClick={() => setFilterTab("live")}
+              >
+                <div className={styles.statTagGreen}>
+                  <span className={styles.greenDot}></span> Đang diễn ra
+                </div>
+                <div className={styles.statNumberRow}>
+                  <span className={styles.statNumber}>{liveCount}</span>
+                  <span className={styles.statUnit}>lớp học</span>
+                </div>
+              </div>
+
+              <div
+                className={`${styles.statCard} ${filterTab === "upcoming" ? styles.statCardActive : ""}`}
+                onClick={() => setFilterTab("upcoming")}
+              >
+                <div className={styles.statTagBlue}>
+                  <span className={styles.blueDot}></span> Sắp diễn ra
+                </div>
+                <div className={styles.statNumberRow}>
+                  <span className={styles.statNumber}>{upcomingCount}</span>
+                  <span className={styles.statUnit}>lớp học</span>
+                </div>
+              </div>
+
+              <div
+                className={`${styles.statCard} ${filterTab === "ended" ? styles.statCardActive : ""}`}
+                onClick={() => setFilterTab("ended")}
+              >
+                <div className={styles.statTagGray}>
+                  <span className={styles.grayDot}></span> Đã kết thúc
+                </div>
+                <div className={styles.statNumberRow}>
+                  <span className={styles.statNumber}>{endedCount}</span>
+                  <span className={styles.statUnit}>lớp học</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.searchFilterBar}>
+              <div className={styles.searchControlsGroup}>
+                <div className={styles.searchInputWrap}>
+                  <Search size={18} className={styles.searchIcon} />
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm lớp học..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                </div>
+
+                <div className={styles.datePickerWrap}>
+                  <Calendar size={18} className={styles.dateIcon} />
+                  <input
+                    type="date"
+                    value={searchDate}
+                    onChange={(e) => setSearchDate(e.target.value)}
+                    className={styles.dateInput}
+                  />
+                  {searchDate && (
+                    <button
+                      className={styles.clearDateBtn}
+                      onClick={() => setSearchDate("")}
+                      title="Xóa lọc ngày"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.filterTabsStack}>
+                <button
+                  className={`${styles.tabBtn} ${filterTab === "all" ? styles.tabBtnActive : ""}`}
+                  onClick={() => setFilterTab("all")}
+                >
+                  Tất cả
+                </button>
+                <button
+                  className={`${styles.tabBtn} ${filterTab === "live" ? styles.tabBtnActive : ""}`}
+                  onClick={() => setFilterTab("live")}
+                >
+                  Đang diễn ra
+                </button>
+                <button
+                  className={`${styles.tabBtn} ${filterTab === "upcoming" ? styles.tabBtnActive : ""}`}
+                  onClick={() => setFilterTab("upcoming")}
+                >
+                  Sắp diễn ra
+                </button>
+                <button
+                  className={`${styles.tabBtn} ${filterTab === "ended" ? styles.tabBtnActive : ""}`}
+                  onClick={() => setFilterTab("ended")}
+                >
+                  Đã kết thúc
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.classCardsStack}>
+              {isLoadingClasses ? (
+                <div className={styles.emptyClassState}>
+                  <p>Đang tải danh sách lớp học từ hệ thống...</p>
+                </div>
+              ) : filteredClasses.length === 0 ? (
+                <div className={styles.emptyClassState}>
+                  <BookOpen size={40} color="#94a3b8" />
+                  <p>Không tìm thấy lớp học phù hợp.</p>
+                </div>
+              ) : (
+                filteredClasses.map((cls) => {
+                  const isThisClassActive =
+                    isSessionActive && selectedClass?.id === cls.id;
+                  return (
+                    <div key={cls.id} className={styles.classCardItem}>
+                      <div className={styles.cardLeftBox}>
+                        <div className={styles.cardIconBox}>
+                          <BookOpen size={24} color="#2563eb" />
+                        </div>
+
+                        <div className={styles.cardMainDetails}>
+                          <div className={styles.titleBadgeRow}>
+                            {cls.status === "live" && (
+                              <span
+                                className={
+                                  isThisClassActive
+                                    ? styles.badgeActiveGreen
+                                    : styles.badgeLiveRed
+                                }
+                              >
+                                {isThisClassActive
+                                  ? "● Đang tham gia"
+                                  : "● LIVE"}
+                              </span>
+                            )}
+                            {cls.status === "upcoming" && (
+                              <span className={styles.badgeUpcomingBlue}>
+                                Sắp diễn ra
+                              </span>
+                            )}
+                            {cls.status === "ended" && (
+                              <span className={styles.badgeEndedGray}>
+                                Đã kết thúc
+                              </span>
+                            )}
+                            <h3 className={styles.cardClassName}>{cls.name}</h3>
+                          </div>
+
+                          <div className={styles.cardMetaRow}>
+                            <span>{cls.startTime} · Hôm nay</span>
+                            <span>
+                              <Users size={14} /> {cls.studentCount} sinh viên
+                            </span>
+                            {cls.groupsCount && (
+                              <span>
+                                <LayoutGrid size={14} /> {cls.groupsCount} nhóm
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.cardRightAction}>
+                        {cls.status === "live" && (
+                          <button
+                            className={
+                              isThisClassActive
+                                ? styles.btnActionGreenActive
+                                : styles.btnActionBlue
+                            }
+                            onClick={() => handleClassCardAction(cls)}
+                          >
+                            {isThisClassActive
+                              ? "Quay lại phòng"
+                              : "Vào phòng dạy ngay"}{" "}
+                            <ChevronRight size={16} />
+                          </button>
+                        )}
+
+                        {cls.status === "upcoming" && (
+                          <button
+                            className={styles.btnActionLightBlue}
+                            onClick={() => handleClassCardAction(cls)}
+                          >
+                            Chuẩn bị <ChevronRight size={16} />
+                          </button>
+                        )}
+
+                        {cls.status === "ended" && (
+                          <button
+                            className={styles.btnActionOutline}
+                            onClick={() => handleViewDetails(cls)}
+                          >
+                            Xem chi tiết <ChevronRight size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+        {/* FLOATING ZOOM WIDGET */}
+        {isSessionActive && selectedClass && (
+          <div className={styles.zoomFloatingWindow}>
+            <div className={styles.zoomVideoContainer}>
+              {isSharing ? (
+                <video
+                  ref={floatScreenVideoRef}
+                  autoPlay
+                  playsInline
+                  className={styles.zoomVideoTag}
+                />
+              ) : activeSpeaker ? (
+                <div className={styles.speakerAvatarBox}>
+                  <div className={styles.bigAvatarCircle}>
+                    {getInitials(activeSpeaker.name)}
+                  </div>
+                </div>
+              ) : (
+                <video
+                  ref={floatVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className={`${styles.zoomVideoTag} ${camOn ? "" : styles.hidden}`}
+                />
+              )}
+
+              {!isSharing && !activeSpeaker && !camOn && (
+                <div className={styles.zoomAvatarFallback}>
+                  {getInitials(teacherName)}
+                </div>
+              )}
+
+              <div className={styles.zoomSpeakerBadge}>
+                {activeSpeaker ? activeSpeaker.name : teacherName}
+              </div>
+
+              <div className={styles.zoomOverlayBar}>
+                <button
+                  type="button"
+                  className={styles.zoomBarBtn}
+                  onClick={toggleMic}
+                  title="Bật/Tắt Mic"
+                >
+                  {micOn ? (
+                    <Mic size={16} />
+                  ) : (
+                    <MicOff size={16} color="#ef4444" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={styles.zoomBarBtn}
+                  onClick={toggleCam}
+                  title="Bật/Tắt Camera"
+                >
+                  {camOn ? (
+                    <Video size={16} />
+                  ) : (
+                    <VideoOff size={16} color="#ef4444" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.zoomBarBtn} ${isSharing ? styles.sharingActive : ""}`}
+                  onClick={toggleShare}
+                  title="Chia sẻ màn hình"
+                >
+                  <ScreenShare size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={styles.zoomExpandBtn}
+                  onClick={() =>
+                    updateSessionStore(true, selectedClass.id, "room")
+                  }
+                  title="Mở rộng phòng dạy"
+                >
+                  <Maximize2 size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isLobbyOpen && selectedClass && (
+          <SessionLobby
+            selectedClass={selectedClass}
+            videoRef={lobbyVideoRef}
+            camOn={camOn}
+            micOn={micOn}
+            onClose={() => setIsLobbyOpen(false)}
+            onToggleCamera={toggleCam}
+            onToggleMicrophone={toggleMic}
+            onEnter={enterRoomFromLobby}
+          />
+        )}
+      </Layout>
+    );
+  }
 
   return (
-    <div className={styles.container}>
-      {/* ===================== HEADER ===================== */}
-      {/* ĐÃ SỬA: header giờ chỉ còn 3 phần — logo, tên/mã lớp (giữa), tài khoản (phải).
-          Dải camera đã được chuyển ra khỏi header, xem khối .cameraBar ngay bên dưới. */}
-      <header className={styles.topBar}>
-        <div className={styles.brand}>
-          <img src="/Ai.png" alt="ClassBridge AI" className={styles.logo} />
-          <span className={styles.brandName}>
-            ClassBridge <span className={styles.brandAccent}>AI</span>
-          </span>
-        </div>
-
-        <div className={styles.classInfo}>
-          <span className={styles.className}>{classInfo.name}</span>
-          <span className={styles.classCode}>Mã lớp: {classInfo.code}</span>
-        </div>
-
-        <div
-          className={styles.accountBadge}
-          onClick={() => setShowAccountMenu((v) => !v)}
-        >
-          <div className={styles.avatarCircle}>
-            {getInitials(currentUser.name)}
-          </div>
-          <span className={styles.accountName}>{currentUser.name}</span>
-
-          {showAccountMenu && (
-            <div className={styles.accountMenu}>
-              <button
-                type="button"
-                className={styles.accountMenuItem}
-                onClick={() => {
-                  localStorage.removeItem("user");
-                  router.push("/login");
-                }}
-              >
-                Đăng xuất
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <div className={styles.cameraBar}>
-        <div className={styles.miniTile}>
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className={`${styles.miniVideo} ${camOn ? "" : styles.hidden}`}
-          />
-          {!camOn && (
-            <div className={styles.miniAvatarFallback}>
-              {getInitials(currentUser.name)}
-            </div>
-          )}
-          <span className={styles.miniName}>{currentUser.name} (Bạn)</span>
-          {!micOn && <MicOff size={11} className={styles.miniMuteIcon} />}
-        </div>
-
-        {participants.map((p) => (
-          <div key={p.id} className={styles.miniTile}>
-            {p.camOn ? (
-              <div className={styles.miniAvatarFallback}>
-                {getInitials(p.name)}
-              </div>
-            ) : (
-              <div className={styles.miniAvatarFallback}>
-                {getInitials(p.name)}
-              </div>
-            )}
-            <span className={styles.miniName}>{p.name}</span>
-            {!p.micOn && <MicOff size={11} className={styles.miniMuteIcon} />}
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.mainArea}>
-        <div className={styles.stage}>
-          {isSharing ? (
-            <video
-              ref={screenVideoRef}
-              autoPlay
-              playsInline
-              className={styles.stageVideo}
-            />
-          ) : (
-            <div className={styles.stagePlaceholder}>
-              <ScreenShare size={40} />
-              <p>Chưa có ai chia sẻ màn hình</p>
-            </div>
-          )}
-        </div>
-
-        <aside className={styles.captionPanel}>
-          <div className={styles.captionBox}>
-            <div className={styles.captionHeader}>
-              <Languages size={14} /> English
-            </div>
-            <div className={styles.captionBody}>
-              {captionsVN.length === 0 ? (
-                <p className={styles.captionEmpty}>Chưa có phụ đề...</p>
-              ) : (
-                captionsVN.map((c) => (
-                  <p key={c.id} className={styles.captionLine}>
-                    {c.text}
-                  </p>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className={styles.captionBox}>
-            <div className={styles.captionHeader}>
-              <Languages size={14} /> VietNamese
-            </div>
-            <div className={styles.captionBody}>
-              {captionsEN.length === 0 ? (
-                <p className={styles.captionEmpty}>No captions yet...</p>
-              ) : (
-                captionsEN.map((c) => (
-                  <p key={c.id} className={styles.captionLine}>
-                    {c.text}
-                  </p>
-                ))
-              )}
-            </div>
-          </div>
-        </aside>
-
-        {showParticipants && (
-          <aside className={styles.sidePanel}>
-            <div className={styles.sidePanelHeader}>
-              <h3>Người tham gia ({participants.length + 1})</h3>
-              <button type="button" onClick={() => setShowParticipants(false)}>
-                <X size={16} />
-              </button>
-            </div>
-            <ul className={styles.participantList}>
-              <li className={styles.participantItem}>
-                <div className={styles.avatarCircle}>
-                  {getInitials(currentUser.name)}
-                </div>
-                <span>{currentUser.name} (Bạn)</span>
-                <div className={styles.participantIcons}>
-                  {micOn ? <Mic size={14} /> : <MicOff size={14} />}
-                  {camOn ? <Video size={14} /> : <VideoOff size={14} />}
-                </div>
-              </li>
-              {participants.map((p) => (
-                <li key={p.id} className={styles.participantItem}>
-                  <div className={styles.avatarCircle}>
-                    {getInitials(p.name)}
-                  </div>
-                  <span>{p.name}</span>
-                  <div className={styles.participantIcons}>
-                    {p.micOn ? <Mic size={14} /> : <MicOff size={14} />}
-                    {p.camOn ? <Video size={14} /> : <VideoOff size={14} />}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )}
-
-        {showChat && (
-          <aside className={styles.sidePanel}>
-            <div className={styles.sidePanelHeader}>
-              <h3>Trò chuyện</h3>
-              <button type="button" onClick={() => setShowChat(false)}>
-                <X size={16} />
-              </button>
-            </div>
-            <div className={styles.chatMessages}>
-              {messages.length === 0 ? (
-                <p className={styles.captionEmpty}>Chưa có tin nhắn nào.</p>
-              ) : (
-                messages.map((m) => (
-                  <div key={m.id} className={styles.chatMessage}>
-                    <span className={styles.chatSender}>
-                      {m.sender} · {m.time}
-                    </span>
-                    <p className={styles.chatText}>{m.text}</p>
-                  </div>
-                ))
-              )}
-            </div>
-            <form className={styles.chatInputRow} onSubmit={handleSendMessage}>
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Nhập tin nhắn..."
-                className={styles.chatInput}
-              />
-              <button
-                type="submit"
-                className={styles.chatSendBtn}
-                aria-label="Gửi"
-              >
-                <Send size={16} />
-              </button>
-            </form>
-          </aside>
-        )}
-
-        {showQuestion && (
-          <aside className={styles.sidePanel}>
-            <div className={styles.sidePanelHeader}>
-              <h3>Câu hỏi</h3>
-              <button type="button" onClick={() => setShowQuestion(false)}>
-                <X size={16} />
-              </button>
-            </div>
-            <div className={styles.chatMessages}>
-              {questions.length === 0 ? (
-                <p className={styles.captionEmpty}>Chưa có câu hỏi nào.</p>
-              ) : (
-                questions.map((question) => (
-                  <div key={question.id} className={styles.chatMessage}>
-                    <span className={styles.chatSender}>
-                      {question.sender} · {question.time}
-                    </span>
-                    <p className={styles.chatText}>{question.text}</p>
-                  </div>
-                ))
-              )}
-            </div>
-            <form className={styles.chatInputRow} onSubmit={handleSendQuestion}>
-              <input
-                value={questionInput}
-                onChange={(e) => setQuestionInput(e.target.value)}
-                placeholder="Nhập câu hỏi..."
-                className={styles.chatInput}
-              />
-              <button
-                type="submit"
-                className={styles.chatSendBtn}
-                aria-label="Gửi câu hỏi"
-              >
-                <Send size={16} />
-              </button>
-            </form>
-          </aside>
-        )}
-      </div>
-
-      <footer className={styles.toolbar}>
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${!micOn ? styles.toolBtnOff : ""}`}
-          onClick={toggleMic}
-        >
-          {micOn ? <Mic size={20} /> : <MicOff size={20} />}
-          <span>Mic</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${!camOn ? styles.toolBtnOff : ""}`}
-          onClick={toggleCam}
-        >
-          {camOn ? <Video size={20} /> : <VideoOff size={20} />}
-          <span>{camOn ? "Tắt cam" : "Bật cam"}</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${isSharing ? styles.toolBtnActive : ""}`}
-          onClick={toggleShare}
-        >
-          <ScreenShare size={20} />
-          <span>{isSharing ? "Dừng share" : "Share"}</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${showParticipants ? styles.toolBtnActive : ""}`}
-          onClick={() => {
-            setShowParticipants((v) => !v);
-            setShowChat(false);
-            setShowQuestion(false);
-          }}
-        >
-          <Users size={20} />
-          <span>Participants</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${showChat ? styles.toolBtnActive : ""}`}
-          onClick={() => {
-            setShowChat((v) => !v);
-            setShowParticipants(false);
-            setShowQuestion(false);
-          }}
-        >
-          <MessageSquare size={20} />
-          <span>Message</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${showQuestion ? styles.toolBtnActive : ""}`}
-          onClick={() => {
-            setShowQuestion((v) => !v);
-            setShowChat(false);
-            setShowParticipants(false);
-          }}
-        >
-          <CircleHelp size={20} />
-          <span>Câu hỏi</span>
-        </button>
-        <div className={styles.leaveWrapper}>
-          <button
-            type="button"
-            className={styles.toolBtn}
-            onClick={() => setShowLeavePopup((prev) => !prev)}
-          >
-            <PhoneOff size={20} />
-            <span>Leave</span>
-          </button>
-          {showLeavePopup && (
-            <div className={styles.leaveMenu}>
-              <button
-                type="button"
-                className={styles.leaveMeetingBtn}
-                onClick={handleLeave}
-              >
-                Leave meeting
-              </button>
-              <button
-                type="button"
-                className={styles.cancelLeaveBtn}
-                onClick={() => setShowLeavePopup(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-      </footer>
-    </div>
+    <ActiveClassRoom
+      selectedClass={selectedClass}
+      teacherName={teacherName}
+      avatarUrl={avatarUrl}
+      participants={participants}
+      captionsVN={captionsVN}
+      captionsEN={captionsEN}
+      micOn={micOn}
+      camOn={camOn}
+      isSharing={isSharing}
+      showParticipants={showParticipants}
+      showChat={showChat}
+      showQuestion={showQuestion}
+      showLeavePopup={showLeavePopup}
+      messages={messages}
+      chatInput={chatInput}
+      questions={questions}
+      questionInput={questionInput}
+      localVideoRef={localVideoRef}
+      screenVideoRef={screenVideoRef}
+      onBackToDashboard={returnToDashboard}
+      onSaveAccountInfo={(info: AccountInfo) => {
+        if (info.username) setTeacherName(info.username);
+        if (info.avatarUrl) setAvatarUrl(info.avatarUrl);
+      }}
+      onPasswordChange={() => alert("Đổi mật khẩu thành công!")}
+      onLogout={() => {
+        localStorage.removeItem("user");
+        sessionStorage.clear();
+        router.push("/login");
+      }}
+      onToggleMic={toggleMic}
+      onToggleCamera={toggleCam}
+      onToggleShare={toggleShare}
+      onTogglePanel={(panel) => {
+        setShowParticipants((previous) =>
+          panel === "participants" ? !previous : false,
+        );
+        setShowChat((previous) => (panel === "chat" ? !previous : false));
+        setShowQuestion((previous) =>
+          panel === "question" ? !previous : false,
+        );
+      }}
+      onClosePanel={(panel) => {
+        if (panel === "participants") setShowParticipants(false);
+        if (panel === "chat") setShowChat(false);
+        if (panel === "question") setShowQuestion(false);
+      }}
+      onToggleLeavePopup={() => setShowLeavePopup((previous) => !previous)}
+      onEndClass={handleEndClass}
+      onCancelLeave={() => setShowLeavePopup(false)}
+      onChatInputChange={setChatInput}
+      onQuestionInputChange={setQuestionInput}
+      onSendMessage={handleSendMessage}
+      onSendQuestion={handleSendQuestion}
+    />
   );
 }

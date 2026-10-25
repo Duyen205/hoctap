@@ -1,18 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import styles from "./accountList.module.css";
+import Layout from "../components/Layout";
 import {
-  GraduationCap,
-  Home,
-  Users,
-  UsersRound,
-  BookOpen,
   ChevronDown,
   Search,
-  Bell,
-  Globe,
   Plus,
   Download,
   Pencil,
@@ -24,38 +18,6 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-type NavChild = { label: string; href: string };
-type NavGroup = {
-  key: string;
-  label: string;
-  href?: string;
-  icon: React.ComponentType<{ size?: number }>;
-  children?: NavChild[];
-};
-
-const NAV_GROUPS: NavGroup[] = [
-  { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: Home },
-  { key: "accountManagement", label: "Account Management", href: "/account", icon: Users },
-  {
-    key: "userManagement",
-    label: "User Management",
-    icon: UsersRound,
-    children: [
-      { label: "Lecturers", href: "/admin/lecturers" },
-      { label: "Students", href: "/admin/students" },
-    ],
-  },
-  {
-    key: "classManagement",
-    label: "Class Management",
-    icon: BookOpen,
-    children: [
-      { label: "All Classes", href: "/admin/classes" },
-      { label: "Enrollments", href: "/admin/enrollments" },
-    ],
-  },
-];
-
 type UserStatus =
   | "Active"
   | "Inactive"
@@ -65,7 +27,13 @@ type UserStatus =
   | "Locked"
   | "NotActivated";
 
-type UserRole = "Admin" | "Editor" | "User" | "Moderator" | "Guest" | "Customer";
+type UserRole =
+  | "Admin"
+  | "Editor"
+  | "User"
+  | "Moderator"
+  | "Guest"
+  | "Customer";
 
 type Account = {
   id: string;
@@ -120,7 +88,13 @@ const USERNAME_REGEX = /^[\p{L}]+$/u;
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
 const PHONE_REGEX = /^\d{10}$/;
 
-type FieldName = "fullName" | "username" | "password" | "email" | "phone" | "studentId";
+type FieldName =
+  | "fullName"
+  | "username"
+  | "password"
+  | "email"
+  | "phone"
+  | "studentId";
 type FieldErrors = Partial<Record<FieldName, string>>;
 
 function validateField(field: FieldName, rawValue: string): string | undefined {
@@ -129,29 +103,36 @@ function validateField(field: FieldName, rawValue: string): string | undefined {
     case "fullName":
       if (!value) return "Vui lòng nhập họ và tên.";
       if (/\d/.test(value)) return "Họ và tên không được chứa số.";
-      if (!FULLNAME_REGEX.test(value)) return "Họ và tên chỉ được chứa chữ cái.";
+      if (!FULLNAME_REGEX.test(value))
+        return "Họ và tên chỉ được chứa chữ cái.";
       return undefined;
     case "username":
       if (!value) return "Vui lòng nhập username.";
       if (/\d/.test(value)) return "Username không được chứa số.";
-      if (!USERNAME_REGEX.test(value)) return "Username chỉ được chứa chữ cái, không khoảng trắng.";
+      if (!USERNAME_REGEX.test(value))
+        return "Username chỉ được chứa chữ cái, không khoảng trắng.";
       return undefined;
     case "password":
       if (!value) return "Vui lòng nhập mật khẩu.";
-      if (value.length < 8 || value.length > 12) return "Mật khẩu phải dài từ 8 đến 12 ký tự.";
+      if (value.length < 8 || value.length > 12)
+        return "Mật khẩu phải dài từ 8 đến 12 ký tự.";
       return undefined;
     case "email":
       if (!value) return "Vui lòng nhập email.";
-      if (!EMAIL_REGEX.test(value)) return "Email phải đúng định dạng và kết thúc bằng @gmail.com.";
+      if (!EMAIL_REGEX.test(value))
+        return "Email phải đúng định dạng và kết thúc bằng @gmail.com.";
       return undefined;
     case "phone":
       if (!value) return undefined;
-      if (!PHONE_REGEX.test(value)) return "Số điện thoại phải gồm đúng 10 chữ số, không chứa chữ.";
+      if (!PHONE_REGEX.test(value))
+        return "Số điện thoại phải gồm đúng 10 chữ số, không chứa chữ.";
       return undefined;
     case "studentId":
       if (!value) return "Vui lòng nhập mã số sinh viên.";
-      if (!/^\d+$/.test(value)) return "Mã số sinh viên chỉ được nhập số, không chứa chữ.";
-      if (value.length < 5 || value.length > 20) return "Mã số sinh viên phải từ 5–20 chữ số.";
+      if (!/^\d+$/.test(value))
+        return "Mã số sinh viên chỉ được nhập số, không chứa chữ.";
+      if (value.length < 5 || value.length > 20)
+        return "Mã số sinh viên phải từ 5–20 chữ số.";
       return undefined;
     default:
       return undefined;
@@ -159,7 +140,6 @@ function validateField(field: FieldName, rawValue: string): string | undefined {
 }
 
 const MOCK_DB_KEY = "classbridge_accounts_mock_db";
-
 
 function removeDiacritics(str: string): string {
   return str
@@ -181,8 +161,7 @@ function isUsernameTaken(username: string, excludeId?: string): boolean {
   const list = loadMockDb();
   return list.some(
     (u) =>
-      u.username.toLowerCase() === username.toLowerCase() &&
-      u.id !== excludeId
+      u.username.toLowerCase() === username.toLowerCase() && u.id !== excludeId,
   );
 }
 
@@ -289,12 +268,13 @@ function mockListAccounts(params: {
         u.username.toLowerCase().includes(needle) ||
         (u.phone ?? "").includes(needle) ||
         (u.studentId ?? "").toLowerCase().includes(needle) ||
-        u.id.toLowerCase().includes(needle)
+        u.id.toLowerCase().includes(needle),
     );
   }
   if (params.status) list = list.filter((u) => u.status === params.status);
   if (params.role) list = list.filter((u) => u.role === params.role);
-  if (params.dateFrom) list = list.filter((u) => u.joinedDate >= params.dateFrom);
+  if (params.dateFrom)
+    list = list.filter((u) => u.joinedDate >= params.dateFrom);
   if (params.dateTo) list = list.filter((u) => u.joinedDate <= params.dateTo);
 
   const sortBy = params.sortBy || "joinedDate";
@@ -311,7 +291,13 @@ function mockListAccounts(params: {
   const totalPages = Math.max(1, Math.ceil(total / params.pageSize));
   const start = (params.page - 1) * params.pageSize;
   const items = list.slice(start, start + params.pageSize);
-  return { items, total, page: params.page, pageSize: params.pageSize, totalPages };
+  return {
+    items,
+    total,
+    page: params.page,
+    pageSize: params.pageSize,
+    totalPages,
+  };
 }
 
 function mockCreateAccount(body: {
@@ -324,13 +310,21 @@ function mockCreateAccount(body: {
   role: string;
 }): Account {
   const list = loadMockDb();
-  if (list.some((u) => u.username.toLowerCase() === body.username.toLowerCase())) {
+  if (
+    list.some((u) => u.username.toLowerCase() === body.username.toLowerCase())
+  ) {
     throw new Error("Username đã tồn tại, vui lòng chọn username khác.");
   }
   if (list.some((u) => u.email.toLowerCase() === body.email.toLowerCase())) {
     throw new Error("Email đã tồn tại, vui lòng dùng email khác.");
   }
-  if (body.studentId && list.some((u) => (u.studentId ?? "").toLowerCase() === body.studentId!.toLowerCase())) {
+  if (
+    body.studentId &&
+    list.some(
+      (u) =>
+        (u.studentId ?? "").toLowerCase() === body.studentId!.toLowerCase(),
+    )
+  ) {
     throw new Error("Mã số sinh viên đã tồn tại.");
   }
   const newAccount: Account = {
@@ -361,7 +355,7 @@ function mockUpdateAccount(
     fullName: string;
     role: string;
     status: string;
-  }>
+  }>,
 ): Account {
   const list = loadMockDb();
   const idx = list.findIndex((u) => u.id === id);
@@ -513,7 +507,7 @@ async function updateAccount(
     fullName: string;
     role: string;
     status: string;
-  }>
+  }>,
 ): Promise<Account> {
   try {
     const res = await fetch(`/api/admin/accounts/${id}`, {
@@ -565,7 +559,7 @@ async function fetchActivityHistory(userId: string): Promise<ActivityLog[]> {
     if (res.status === 404) return mockActivityHistory(userId);
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? data : data?.items ?? [];
+    return Array.isArray(data) ? data : (data?.items ?? []);
   } catch {
     return mockActivityHistory(userId);
   }
@@ -592,19 +586,7 @@ function statusClass(status: UserStatus): string {
 
 export default function AdminAccountsPage() {
   const router = useRouter();
-  const pathname = usePathname();
-
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    userManagement: false,
-    classManagement: false,
-  });
-
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [language, setLanguage] = useState<"EN" | "VI">("EN");
-  const langMenuRef = useRef<HTMLDivElement>(null);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-  const [topSearch, setTopSearch] = useState("");
   const [admin, setAdmin] = useState<AdminUser>({ name: "" });
 
   const [q, setQ] = useState("");
@@ -649,11 +631,11 @@ export default function AdminAccountsPage() {
 
   const [toast, setToast] = useState<string | null>(null);
 
-useEffect(() => {
-  if (!toast) return;
-  const t = setTimeout(() => setToast(null), 3200);
-  return () => clearTimeout(t);
-}, [toast]);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const todayStr = useMemo(() => todayISO(), []);
   const hasSelection = selectedIds.size > 0;
@@ -686,7 +668,16 @@ useEffect(() => {
     } finally {
       setLoading(false);
     }
-  }, [q, statusFilter, roleFilter, dateFilter, page, pageSize, sortBy, sortDir]);
+  }, [
+    q,
+    statusFilter,
+    roleFilter,
+    dateFilter,
+    page,
+    pageSize,
+    sortBy,
+    sortDir,
+  ]);
 
   useEffect(() => {
     loadAccounts();
@@ -698,12 +689,6 @@ useEffect(() => {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
-        setIsLangMenuOpen(false);
-      }
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setIsProfileMenuOpen(false);
-      }
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpenId(null);
       }
@@ -725,15 +710,6 @@ useEffect(() => {
     setDateError(null);
     setDateFilter(value);
     setPage(1);
-  }
-
-  function toggleGroup(key: string) {
-    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
-
-  function handleNavigate(href?: string) {
-    if (!href || href === pathname) return;
-    router.push(href);
   }
 
   function toggleSort(column: string) {
@@ -788,7 +764,10 @@ useEffect(() => {
     if (field === "studentId") {
       const digits = value.replace(/\D/g, "");
       setForm((f) => ({ ...f, studentId: digits }));
-      setFieldErrors((fe) => ({ ...fe, studentId: validateField("studentId", digits) }));
+      setFieldErrors((fe) => ({
+        ...fe,
+        studentId: validateField("studentId", digits),
+      }));
       return;
     }
     setForm((f) => ({ ...f, [field]: value }));
@@ -845,7 +824,9 @@ useEffect(() => {
     };
     setFieldErrors(errors);
     if (Object.values(errors).some(Boolean)) {
-      setFormError("Vui lòng kiểm tra lại các trường được đánh dấu lỗi bên dưới.");
+      setFormError(
+        "Vui lòng kiểm tra lại các trường được đánh dấu lỗi bên dưới.",
+      );
       return;
     }
     setSubmitting(true);
@@ -888,10 +869,13 @@ useEffect(() => {
       phone: validateField("phone", form.phone),
       studentId: validateField("studentId", form.studentId),
     };
-    if (form.password) errors.password = validateField("password", form.password);
+    if (form.password)
+      errors.password = validateField("password", form.password);
     setFieldErrors(errors);
     if (Object.values(errors).some(Boolean)) {
-      setFormError("Vui lòng kiểm tra lại các trường được đánh dấu lỗi bên dưới.");
+      setFormError(
+        "Vui lòng kiểm tra lại các trường được đánh dấu lỗi bên dưới.",
+      );
       return;
     }
     setSubmitting(true);
@@ -941,24 +925,27 @@ useEffect(() => {
   }
 
   async function handleBulkDelete() {
-  if (selectedIds.size === 0) return;
-  if (!confirm(`Xóa ${selectedIds.size} tài khoản đã chọn? Không thể hoàn tác.`)) return;
-  setSubmitting(true);
-  try {
-    const count = selectedIds.size;
-    for (const id of selectedIds) {
-      await deleteAccount(id);
+    if (selectedIds.size === 0) return;
+    if (
+      !confirm(`Xóa ${selectedIds.size} tài khoản đã chọn? Không thể hoàn tác.`)
+    )
+      return;
+    setSubmitting(true);
+    try {
+      const count = selectedIds.size;
+      for (const id of selectedIds) {
+        await deleteAccount(id);
+      }
+      setSelectedIds(new Set());
+      if (detailUser && selectedIds.has(detailUser.id)) setDetailUser(null);
+      setToast(`Đã xóa ${count} tài khoản thành công.`);
+      await loadAccounts();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Không thể xóa");
+    } finally {
+      setSubmitting(false);
     }
-    setSelectedIds(new Set());
-    if (detailUser && selectedIds.has(detailUser.id)) setDetailUser(null);
-    setToast(`Đã xóa ${count} tài khoản thành công.`);
-    await loadAccounts();
-  } catch (err) {
-    alert(err instanceof Error ? err.message : "Không thể xóa");
-  } finally {
-    setSubmitting(false);
   }
-}
   async function openDetailPanel(user: Account) {
     setMenuOpenId(null);
     setDetailUser(user);
@@ -974,7 +961,17 @@ useEffect(() => {
   }
 
   async function handleExport() {
-    const header = ["ID", "Username", "Full Name", "Email", "Phone", "Status", "Role", "Joined Date", "Activity History"];
+    const header = [
+      "ID",
+      "Username",
+      "Full Name",
+      "Email",
+      "Phone",
+      "Status",
+      "Role",
+      "Joined Date",
+      "Activity History",
+    ];
     const rows = items.map((u, i) =>
       [
         String((page - 1) * pageSize + i + 1),
@@ -988,7 +985,7 @@ useEffect(() => {
         u.lastActiveLabel,
       ]
         .map((c) => `"${String(c).replace(/"/g, '""')}"`)
-        .join(",")
+        .join(","),
     );
     const csv = [header.join(","), ...rows].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
@@ -1019,117 +1016,19 @@ useEffect(() => {
   const to = Math.min(page * pageSize, total);
 
   return (
-    <div className={styles.page}>
-      <aside className={styles.sidebar}>
-        <div className={styles.logoArea}>
-          <span className={styles.logoIcon}>
-            <GraduationCap size={20} />
-          </span>
-          <span className={styles.logoText}>ClassBridge</span>
-        </div>
-        <nav className={styles.navMenu}>
-          {NAV_GROUPS.map((group) => {
-            const Icon = group.icon;
-            if (!group.children) {
-              return (
-                <button
-                  key={group.key}
-                  type="button"
-                  onClick={() => handleNavigate(group.href)}
-                  className={`${styles.navItem} ${pathname === group.href ? styles.navItemActive : ""}`}
-                >
-                  <Icon size={18} />
-                  <span>{group.label}</span>
-                </button>
-              );
-            }
-            const isOpen = openGroups[group.key];
-            return (
-              <div key={group.key} className={styles.navGroup}>
-                <button type="button" onClick={() => toggleGroup(group.key)} className={styles.navItem}>
-                  <Icon size={18} />
-                  <span>{group.label}</span>
-                  <ChevronDown size={15} className={`${styles.navChevron} ${isOpen ? styles.navChevronOpen : ""}`} />
-                </button>
-                {isOpen && (
-                  <div className={styles.navChildren}>
-                    {group.children.map((child) => (
-                      <button
-                        key={child.href}
-                        type="button"
-                        onClick={() => handleNavigate(child.href)}
-                        className={`${styles.navItemChild} ${pathname === child.href ? styles.navItemChildActive : ""}`}
-                      >
-                        <span>{child.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-      </aside>
-
-      <div className={styles.contentArea}>
-        <header className={styles.topbar}>
-          <label className={styles.searchBoxTop}>
-            <Search size={16} />
-            <input type="search" placeholder="Search..." value={topSearch} onChange={(e) => setTopSearch(e.target.value)} />
-          </label>
-          <div className={styles.topbarActions}>
-            <button type="button" className={styles.iconButton} aria-label="Notifications">
-              <Bell size={18} />
-            </button>
-            <div className={styles.dropdownWrap} ref={langMenuRef}>
-              <button type="button" className={styles.langButton} onClick={() => setIsLangMenuOpen((v) => !v)}>
-                <Globe size={15} />
-                <span>{language}</span>
-                <ChevronDown size={13} />
-              </button>
-              {isLangMenuOpen && (
-                <div className={styles.dropdownMenu}>
-                  {(["EN", "VI"] as const).map((lang) => (
-                    <button
-                      key={lang}
-                      type="button"
-                      className={`${styles.dropdownItem} ${language === lang ? styles.dropdownItemActive : ""}`}
-                      onClick={() => {
-                        setLanguage(lang);
-                        setIsLangMenuOpen(false);
-                      }}
-                    >
-                      {lang === "EN" ? "English" : "Tiếng Việt"}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <span className={styles.topbarDivider} />
-            <div className={styles.dropdownWrap} ref={profileMenuRef}>
-              <button type="button" className={styles.profileButton} onClick={() => setIsProfileMenuOpen((v) => !v)}>
-                <span className={styles.profileAvatar}>{(admin.name || "A").slice(0, 1).toUpperCase()}</span>
-                <span className={styles.profileName}>{admin.name || "Admin"}</span>
-                <ChevronDown size={13} />
-              </button>
-              {isProfileMenuOpen && (
-                <div className={styles.dropdownMenu}>
-                  <button type="button" className={styles.dropdownItem}>Profile</button>
-                  <button type="button" className={styles.dropdownItem} onClick={() => router.push("/logout")}>
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <main className={styles.main}>
+    <Layout
+      mainClassName={`${styles.page} ${styles.main}`}
+      language={language}
+      onLanguageChange={setLanguage}
+      adminName={admin.name}
+      onLogout={() => router.push("/logout")}
+    >
           <div className={styles.pageHeader}>
             <div>
               <h1 className={styles.pageTitle}>Account Management</h1>
               <p className={styles.pageSubtitle}>
-                Quản lý tài khoản — tìm kiếm, lọc, thêm / sửa / xóa và xem lịch sử hoạt động.
+                Quản lý tài khoản — tìm kiếm, lọc, thêm / sửa / xóa và xem lịch
+                sử hoạt động.
               </p>
             </div>
           </div>
@@ -1137,27 +1036,29 @@ useEffect(() => {
           <div className={styles.mainWithPanel}>
             <div className={styles.mainCol}>
               {hasSelection ? (
-  <div className={styles.bulkBar}>
-    <span className={styles.bulkInfo}>Đã chọn {selectedIds.size} tài khoản</span>
-    <div className={styles.bulkActions}>
-      <button
-        type="button"
-        className={styles.btnBulkCancel}
-        onClick={() => setSelectedIds(new Set())}
-      >
-        Hủy
-      </button>
-      <button
-        type="button"
-        className={styles.btnBulkDelete}
-        onClick={handleBulkDelete}
-        disabled={submitting}
-      >
-        <Trash2 size={16} /> Xóa
-      </button>
-    </div>
-  </div>
-) : (
+                <div className={styles.bulkBar}>
+                  <span className={styles.bulkInfo}>
+                    Đã chọn {selectedIds.size} tài khoản
+                  </span>
+                  <div className={styles.bulkActions}>
+                    <button
+                      type="button"
+                      className={styles.btnBulkCancel}
+                      onClick={() => setSelectedIds(new Set())}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.btnBulkDelete}
+                      onClick={handleBulkDelete}
+                      disabled={submitting}
+                    >
+                      <Trash2 size={16} /> Xóa
+                    </button>
+                  </div>
+                </div>
+              ) : (
                 <div className={styles.filtersBar}>
                   <label className={styles.searchInputWrap}>
                     <Search size={16} />
@@ -1169,30 +1070,60 @@ useEffect(() => {
                     />
                   </label>
                   <div className={styles.filterSelect}>
-                    <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                    >
                       {STATUS_OPTIONS.map((o) => (
-                        <option key={o.value || "all-s"} value={o.value}>{o.label}</option>
+                        <option key={o.value || "all-s"} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown size={14} className={styles.selectChevron} />
                   </div>
                   <div className={styles.filterSelect}>
-                    <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}>
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => {
+                        setRoleFilter(e.target.value);
+                        setPage(1);
+                      }}
+                    >
                       {ROLE_OPTIONS.map((o) => (
-                        <option key={o.value || "all-r"} value={o.value}>{o.label}</option>
+                        <option key={o.value || "all-r"} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown size={14} className={styles.selectChevron} />
                   </div>
                   <div className={styles.dateInputWrap}>
                     <Calendar size={14} />
-                    <input type="date" value={dateFilter} max={todayStr} onChange={(e) => handleDateChange(e.target.value)} aria-label="Ngày đăng ký" />
+                    <input
+                      type="date"
+                      value={dateFilter}
+                      max={todayStr}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      aria-label="Ngày đăng ký"
+                    />
                   </div>
                   <div className={styles.filtersSpacer} />
-                  <button type="button" className={styles.btnExport} onClick={handleExport}>
+                  <button
+                    type="button"
+                    className={styles.btnExport}
+                    onClick={handleExport}
+                  >
                     <Download size={16} /> Export
                   </button>
-                  <button type="button" className={styles.btnAdd} onClick={openAddModal}>
+                  <button
+                    type="button"
+                    className={styles.btnAdd}
+                    onClick={openAddModal}
+                  >
                     <Plus size={16} /> Add User
                   </button>
                 </div>
@@ -1202,7 +1133,13 @@ useEffect(() => {
               {error && (
                 <div className={styles.errorBanner}>
                   {error}{" "}
-                  <button type="button" onClick={loadAccounts} className={styles.retryLink}>Thử lại</button>
+                  <button
+                    type="button"
+                    onClick={loadAccounts}
+                    className={styles.retryLink}
+                  >
+                    Thử lại
+                  </button>
                 </div>
               )}
 
@@ -1215,33 +1152,86 @@ useEffect(() => {
                           <input
                             type="checkbox"
                             className={styles.checkbox}
-                            checked={items.length > 0 && selectedIds.size === items.length}
+                            checked={
+                              items.length > 0 &&
+                              selectedIds.size === items.length
+                            }
                             onChange={toggleSelectAll}
                             aria-label="Select all"
                           />
                         </th>
                         <th className={styles.idCell}>ID</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("username")}>Username</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("fullName")}>Full Name</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("studentId")}>Mã SV</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("email")}>Email</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("status")}>Status</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("role")}>Role</th>
-                        <th className={styles.sortable} onClick={() => toggleSort("joinedDate")}>Joined Date</th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("username")}
+                        >
+                          Username
+                        </th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("fullName")}
+                        >
+                          Full Name
+                        </th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("studentId")}
+                        >
+                          Mã SV
+                        </th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("email")}
+                        >
+                          Email
+                        </th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("status")}
+                        >
+                          Status
+                        </th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("role")}
+                        >
+                          Role
+                        </th>
+                        <th
+                          className={styles.sortable}
+                          onClick={() => toggleSort("joinedDate")}
+                        >
+                          Joined Date
+                        </th>
                         <th>Activity History</th>
                         <th style={{ width: 48 }} />
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
-                        <tr><td colSpan={11} className={styles.loadingState}>Loading...</td></tr>
+                        <tr>
+                          <td colSpan={11} className={styles.loadingState}>
+                            Loading...
+                          </td>
+                        </tr>
                       ) : items.length === 0 ? (
-                        <tr><td colSpan={11} className={styles.emptyState}>Không có tài khoản nào phù hợp bộ lọc.</td></tr>
+                        <tr>
+                          <td colSpan={11} className={styles.emptyState}>
+                            Không có tài khoản nào phù hợp bộ lọc.
+                          </td>
+                        </tr>
                       ) : (
                         items.map((user, index) => {
                           const rowId = (page - 1) * pageSize + index + 1;
                           return (
-                            <tr key={user.id} className={selectedIds.has(user.id) ? styles.selected : undefined}>
+                            <tr
+                              key={user.id}
+                              className={
+                                selectedIds.has(user.id)
+                                  ? styles.selected
+                                  : undefined
+                              }
+                            >
                               <td className={styles.checkboxCell}>
                                 <input
                                   type="checkbox"
@@ -1253,44 +1243,78 @@ useEffect(() => {
                               </td>
                               <td className={styles.idCell}>{rowId}</td>
                               <td>
-                                <button type="button" className={styles.userNameLink} onClick={() => openDetailPanel(user)}>
+                                <button
+                                  type="button"
+                                  className={styles.userNameLink}
+                                  onClick={() => openDetailPanel(user)}
+                                >
                                   {user.username}
                                 </button>
                               </td>
-                              <td className={styles.usernameCell}>{user.fullName}</td>
-                              <td className={styles.dateCell}>{user.studentId || "—"}</td>
+                              <td className={styles.usernameCell}>
+                                {user.fullName}
+                              </td>
+                              <td className={styles.dateCell}>
+                                {user.studentId || "—"}
+                              </td>
                               <td className={styles.emailCell}>{user.email}</td>
                               <td>
-                                <span className={`${styles.statusBadge} ${statusClass(user.status)}`}>
-                                  {user.status === "NotActivated" ? "Not Activated" : user.status}
+                                <span
+                                  className={`${styles.statusBadge} ${statusClass(user.status)}`}
+                                >
+                                  {user.status === "NotActivated"
+                                    ? "Not Activated"
+                                    : user.status}
                                 </span>
                               </td>
                               <td className={styles.roleCell}>{user.role}</td>
-                              <td className={styles.dateCell}>{user.joinedDate}</td>
+                              <td className={styles.dateCell}>
+                                {user.joinedDate}
+                              </td>
                               <td>
-                                <button type="button" className={styles.activityLink} onClick={() => openDetailPanel(user)}>
+                                <button
+                                  type="button"
+                                  className={styles.activityLink}
+                                  onClick={() => openDetailPanel(user)}
+                                >
                                   {user.lastActiveLabel || "View history"}
                                 </button>
                               </td>
                               <td>
-                                <div className={styles.kebabWrap} ref={menuOpenId === user.id ? menuRef : undefined}>
+                                <div
+                                  className={styles.kebabWrap}
+                                  ref={
+                                    menuOpenId === user.id ? menuRef : undefined
+                                  }
+                                >
                                   <button
                                     type="button"
                                     className={styles.kebabBtn}
                                     aria-label="More actions"
-                                    onClick={() => setMenuOpenId((id) => (id === user.id ? null : user.id))}
+                                    onClick={() =>
+                                      setMenuOpenId((id) =>
+                                        id === user.id ? null : user.id,
+                                      )
+                                    }
                                   >
                                     <MoreVertical size={16} />
                                   </button>
                                   {menuOpenId === user.id && (
                                     <div className={styles.kebabMenu}>
-                                      <button type="button" className={styles.kebabItem} onClick={() => openEditModal(user)}>
+                                      <button
+                                        type="button"
+                                        className={styles.kebabItem}
+                                        onClick={() => openEditModal(user)}
+                                      >
                                         <Pencil size={14} /> Chỉnh sửa
                                       </button>
                                       <button
                                         type="button"
                                         className={`${styles.kebabItem} ${styles.kebabItemDanger}`}
-                                        onClick={() => { setMenuOpenId(null); setDeleteUser(user); }}
+                                        onClick={() => {
+                                          setMenuOpenId(null);
+                                          setDeleteUser(user);
+                                        }}
                                       >
                                         <Trash2 size={14} /> Xóa
                                       </button>
@@ -1308,14 +1332,26 @@ useEffect(() => {
 
                 {total > 0 && (
                   <div className={styles.pagination}>
-                    <span className={styles.paginationInfo}>Showing {from}–{to} of {total}</span>
+                    <span className={styles.paginationInfo}>
+                      Showing {from}–{to} of {total}
+                    </span>
                     <div className={styles.paginationCenter}>
-                      <button type="button" className={styles.btnShowMore} onClick={handleShowMore} title="Xem thêm tài khoản trên 1 trang">
+                      <button
+                        type="button"
+                        className={styles.btnShowMore}
+                        onClick={handleShowMore}
+                        title="Xem thêm tài khoản trên 1 trang"
+                      >
                         Show more
                       </button>
                     </div>
                     <div className={styles.paginationControls}>
-                      <button type="button" className={styles.pageBtn} disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page <= 1}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      >
                         <ChevronLeft size={16} />
                       </button>
                       {pageNumbers.map((n) => (
@@ -1328,7 +1364,14 @@ useEffect(() => {
                           {n}
                         </button>
                       ))}
-                      <button type="button" className={styles.pageBtn} disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                      <button
+                        type="button"
+                        className={styles.pageBtn}
+                        disabled={page >= totalPages}
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                      >
                         <ChevronRight size={16} />
                       </button>
                     </div>
@@ -1353,70 +1396,103 @@ useEffect(() => {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={detailUser.avatarUrl} alt="" />
                     ) : (
-                      (detailUser.fullName || detailUser.username || "?").slice(0, 1).toUpperCase()
+                      (detailUser.fullName || detailUser.username || "?")
+                        .slice(0, 1)
+                        .toUpperCase()
                     )}
                   </div>
                   <h3 className={styles.detailName}>{detailUser.fullName}</h3>
-                  <p className={styles.detailUsername}>@{detailUser.username}</p>
+                  <p className={styles.detailUsername}>
+                    @{detailUser.username}
+                  </p>
                   <div className={styles.detailStatusRow}>
-                    <span className={`${styles.statusBadge} ${statusClass(detailUser.status)}`}>{detailUser.status}</span>
+                    <span
+                      className={`${styles.statusBadge} ${statusClass(detailUser.status)}`}
+                    >
+                      {detailUser.status}
+                    </span>
                   </div>
                 </div>
                 <div className={styles.detailSection}>
                   <p className={styles.detailSectionTitle}>Thông tin</p>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Email</span>
-                    <span className={styles.detailValue}>{detailUser.email}</span>
+                    <span className={styles.detailValue}>
+                      {detailUser.email}
+                    </span>
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Mã số sinh viên</span>
-                    <span className={styles.detailValue}>{detailUser.studentId || "—"}</span>
+                    <span className={styles.detailValue}>
+                      {detailUser.studentId || "—"}
+                    </span>
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Role</span>
-                    <span className={styles.detailValue}>{detailUser.role}</span>
+                    <span className={styles.detailValue}>
+                      {detailUser.role}
+                    </span>
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Joined</span>
-                    <span className={styles.detailValue}>{detailUser.joinedDate}</span>
+                    <span className={styles.detailValue}>
+                      {detailUser.joinedDate}
+                    </span>
                   </div>
                 </div>
                 <div className={styles.detailSection}>
                   <p className={styles.detailSectionTitle}>Lịch sử hoạt động</p>
                   {activityLoading ? (
-                    <p className={styles.loadingState} style={{ padding: 12 }}>Loading...</p>
+                    <p className={styles.loadingState} style={{ padding: 12 }}>
+                      Loading...
+                    </p>
                   ) : activityLogs.length === 0 ? (
-                    <p className={styles.emptyState} style={{ padding: 12 }}>Chưa có lịch sử.</p>
+                    <p className={styles.emptyState} style={{ padding: 12 }}>
+                      Chưa có lịch sử.
+                    </p>
                   ) : (
                     <div className={styles.detailTimeline}>
                       {activityLogs.map((log) => (
                         <div key={log.id} className={styles.detailTimelineItem}>
                           <span className={styles.detailTimelineDot} />
                           <div>
-                            <p className={styles.detailTimelineTime}>{log.time}</p>
-                            <p className={styles.detailTimelineTitle}>{log.title}</p>
-                            <p className={styles.detailTimelineDesc}>{log.description}</p>
+                            <p className={styles.detailTimelineTime}>
+                              {log.time}
+                            </p>
+                            <p className={styles.detailTimelineTitle}>
+                              {log.title}
+                            </p>
+                            <p className={styles.detailTimelineDesc}>
+                              {log.description}
+                            </p>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <button type="button" className={styles.detailClose} onClick={() => setDetailUser(null)}>
+                <button
+                  type="button"
+                  className={styles.detailClose}
+                  onClick={() => setDetailUser(null)}
+                >
                   Close
                 </button>
               </aside>
             )}
           </div>
-        </main>
-      </div>
 
       {addOpen && (
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Add New User</h2>
-              <button type="button" className={styles.modalClose} onClick={() => setAddOpen(false)} aria-label="Close">
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setAddOpen(false)}
+                aria-label="Close"
+              >
                 <X size={18} />
               </button>
             </div>
@@ -1424,40 +1500,105 @@ useEffect(() => {
               <div className={styles.modalBody}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Full Name *</label>
-                  <input className={`${styles.formInput} ${fieldErrors.fullName ? styles.inputError : ""}`} value={form.fullName} onChange={(e) => updateFormField("fullName", e.target.value)} placeholder="Nguyễn Văn A" />
-                  {fieldErrors.fullName && <p className={styles.fieldError}>{fieldErrors.fullName}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.fullName ? styles.inputError : ""}`}
+                    value={form.fullName}
+                    onChange={(e) =>
+                      updateFormField("fullName", e.target.value)
+                    }
+                    placeholder="Nguyễn Văn A"
+                  />
+                  {fieldErrors.fullName && (
+                    <p className={styles.fieldError}>{fieldErrors.fullName}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Username *</label>
-                  <input className={`${styles.formInput} ${fieldErrors.username ? styles.inputError : ""}`} value={form.username} onChange={(e) => updateFormField("username", e.target.value)} autoComplete="off" />
-                  {fieldErrors.username && <p className={styles.fieldError}>{fieldErrors.username}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.username ? styles.inputError : ""}`}
+                    value={form.username}
+                    onChange={(e) =>
+                      updateFormField("username", e.target.value)
+                    }
+                    autoComplete="off"
+                  />
+                  {fieldErrors.username && (
+                    <p className={styles.fieldError}>{fieldErrors.username}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Password * (8-12 ký tự)</label>
-                  <input type="password" className={`${styles.formInput} ${fieldErrors.password ? styles.inputError : ""}`} value={form.password} onChange={(e) => updateFormField("password", e.target.value)} autoComplete="new-password" maxLength={12} />
-                  {fieldErrors.password && <p className={styles.fieldError}>{fieldErrors.password}</p>}
+                  <label className={styles.formLabel}>
+                    Password * (8-12 ký tự)
+                  </label>
+                  <input
+                    type="password"
+                    className={`${styles.formInput} ${fieldErrors.password ? styles.inputError : ""}`}
+                    value={form.password}
+                    onChange={(e) =>
+                      updateFormField("password", e.target.value)
+                    }
+                    autoComplete="new-password"
+                    maxLength={12}
+                  />
+                  {fieldErrors.password && (
+                    <p className={styles.fieldError}>{fieldErrors.password}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Email * </label>
-                  <input type="email" className={`${styles.formInput} ${fieldErrors.email ? styles.inputError : ""}`} value={form.email} onChange={(e) => updateFormField("email", e.target.value)} placeholder="tenban@gmail.com" />
-                  {fieldErrors.email && <p className={styles.fieldError}>{fieldErrors.email}</p>}
+                  <input
+                    type="email"
+                    className={`${styles.formInput} ${fieldErrors.email ? styles.inputError : ""}`}
+                    value={form.email}
+                    onChange={(e) => updateFormField("email", e.target.value)}
+                    placeholder="tenban@gmail.com"
+                  />
+                  {fieldErrors.email && (
+                    <p className={styles.fieldError}>{fieldErrors.email}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Mã số sinh viên *</label>
-                  <input className={`${styles.formInput} ${fieldErrors.studentId ? styles.inputError : ""}`} value={form.studentId} onChange={(e) => updateFormField("studentId", e.target.value)} placeholder="SV20210001" />
-                  {fieldErrors.studentId && <p className={styles.fieldError}>{fieldErrors.studentId}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.studentId ? styles.inputError : ""}`}
+                    value={form.studentId}
+                    onChange={(e) =>
+                      updateFormField("studentId", e.target.value)
+                    }
+                    placeholder="SV20210001"
+                  />
+                  {fieldErrors.studentId && (
+                    <p className={styles.fieldError}>{fieldErrors.studentId}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Phone (tùy chọn)</label>
-                  <input className={`${styles.formInput} ${fieldErrors.phone ? styles.inputError : ""}`} value={form.phone} onChange={(e) => updateFormField("phone", e.target.value)} placeholder="09xxxxxxxx" inputMode="numeric" maxLength={10} />
-                  {fieldErrors.phone && <p className={styles.fieldError}>{fieldErrors.phone}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.phone ? styles.inputError : ""}`}
+                    value={form.phone}
+                    onChange={(e) => updateFormField("phone", e.target.value)}
+                    placeholder="09xxxxxxxx"
+                    inputMode="numeric"
+                    maxLength={10}
+                  />
+                  {fieldErrors.phone && (
+                    <p className={styles.fieldError}>{fieldErrors.phone}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Role</label>
                   <div className={styles.selectWrap}>
-                    <select className={styles.formSelect} value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}>
+                    <select
+                      className={styles.formSelect}
+                      value={form.role}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, role: e.target.value }))
+                      }
+                    >
                       {ROLE_OPTIONS.filter((o) => o.value).map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown size={14} className={styles.selectChevron} />
@@ -1466,8 +1607,20 @@ useEffect(() => {
                 {formError && <p className={styles.formError}>{formError}</p>}
               </div>
               <div className={styles.modalFooter}>
-                <button type="button" className={styles.btnCancel} onClick={() => setAddOpen(false)}>Cancel</button>
-                <button type="submit" className={styles.btnPrimary} disabled={submitting}>{submitting ? "Saving..." : "Create Account"}</button>
+                <button
+                  type="button"
+                  className={styles.btnCancel}
+                  onClick={() => setAddOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.btnPrimary}
+                  disabled={submitting}
+                >
+                  {submitting ? "Saving..." : "Create Account"}
+                </button>
               </div>
             </form>
           </div>
@@ -1479,7 +1632,12 @@ useEffect(() => {
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Edit User</h2>
-              <button type="button" className={styles.modalClose} onClick={() => setEditUser(null)} aria-label="Close">
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setEditUser(null)}
+                aria-label="Close"
+              >
                 <X size={18} />
               </button>
             </div>
@@ -1487,40 +1645,103 @@ useEffect(() => {
               <div className={styles.modalBody}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Full Name *</label>
-                  <input className={`${styles.formInput} ${fieldErrors.fullName ? styles.inputError : ""}`} value={form.fullName} onChange={(e) => updateFormField("fullName", e.target.value)} />
-                  {fieldErrors.fullName && <p className={styles.fieldError}>{fieldErrors.fullName}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.fullName ? styles.inputError : ""}`}
+                    value={form.fullName}
+                    onChange={(e) =>
+                      updateFormField("fullName", e.target.value)
+                    }
+                  />
+                  {fieldErrors.fullName && (
+                    <p className={styles.fieldError}>{fieldErrors.fullName}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Username *</label>
-                  <input className={`${styles.formInput} ${fieldErrors.username ? styles.inputError : ""}`} value={form.username} onChange={(e) => updateFormField("username", e.target.value)} />
-                  {fieldErrors.username && <p className={styles.fieldError}>{fieldErrors.username}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.username ? styles.inputError : ""}`}
+                    value={form.username}
+                    onChange={(e) =>
+                      updateFormField("username", e.target.value)
+                    }
+                  />
+                  {fieldErrors.username && (
+                    <p className={styles.fieldError}>{fieldErrors.username}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>New Password (để trống nếu không đổi)</label>
-                  <input type="password" className={`${styles.formInput} ${fieldErrors.password ? styles.inputError : ""}`} value={form.password} onChange={(e) => updateFormField("password", e.target.value)} autoComplete="new-password" maxLength={12} />
-                  {fieldErrors.password && <p className={styles.fieldError}>{fieldErrors.password}</p>}
+                  <label className={styles.formLabel}>
+                    New Password (để trống nếu không đổi)
+                  </label>
+                  <input
+                    type="password"
+                    className={`${styles.formInput} ${fieldErrors.password ? styles.inputError : ""}`}
+                    value={form.password}
+                    onChange={(e) =>
+                      updateFormField("password", e.target.value)
+                    }
+                    autoComplete="new-password"
+                    maxLength={12}
+                  />
+                  {fieldErrors.password && (
+                    <p className={styles.fieldError}>{fieldErrors.password}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Email * (@gmail.com)</label>
-                  <input type="email" className={`${styles.formInput} ${fieldErrors.email ? styles.inputError : ""}`} value={form.email} onChange={(e) => updateFormField("email", e.target.value)} />
-                  {fieldErrors.email && <p className={styles.fieldError}>{fieldErrors.email}</p>}
+                  <label className={styles.formLabel}>
+                    Email * (@gmail.com)
+                  </label>
+                  <input
+                    type="email"
+                    className={`${styles.formInput} ${fieldErrors.email ? styles.inputError : ""}`}
+                    value={form.email}
+                    onChange={(e) => updateFormField("email", e.target.value)}
+                  />
+                  {fieldErrors.email && (
+                    <p className={styles.fieldError}>{fieldErrors.email}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Mã số sinh viên *</label>
-                  <input className={`${styles.formInput} ${fieldErrors.studentId ? styles.inputError : ""}`} value={form.studentId} onChange={(e) => updateFormField("studentId", e.target.value)} placeholder="SV20210001" />
-                  {fieldErrors.studentId && <p className={styles.fieldError}>{fieldErrors.studentId}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.studentId ? styles.inputError : ""}`}
+                    value={form.studentId}
+                    onChange={(e) =>
+                      updateFormField("studentId", e.target.value)
+                    }
+                    placeholder="SV20210001"
+                  />
+                  {fieldErrors.studentId && (
+                    <p className={styles.fieldError}>{fieldErrors.studentId}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Phone (tùy chọn)</label>
-                  <input className={`${styles.formInput} ${fieldErrors.phone ? styles.inputError : ""}`} value={form.phone} onChange={(e) => updateFormField("phone", e.target.value)} inputMode="numeric" maxLength={10} />
-                  {fieldErrors.phone && <p className={styles.fieldError}>{fieldErrors.phone}</p>}
+                  <input
+                    className={`${styles.formInput} ${fieldErrors.phone ? styles.inputError : ""}`}
+                    value={form.phone}
+                    onChange={(e) => updateFormField("phone", e.target.value)}
+                    inputMode="numeric"
+                    maxLength={10}
+                  />
+                  {fieldErrors.phone && (
+                    <p className={styles.fieldError}>{fieldErrors.phone}</p>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Role</label>
                   <div className={styles.selectWrap}>
-                    <select className={styles.formSelect} value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}>
+                    <select
+                      className={styles.formSelect}
+                      value={form.role}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, role: e.target.value }))
+                      }
+                    >
                       {ROLE_OPTIONS.filter((o) => o.value).map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown size={14} className={styles.selectChevron} />
@@ -1529,9 +1750,17 @@ useEffect(() => {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Status</label>
                   <div className={styles.selectWrap}>
-                    <select className={styles.formSelect} value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
+                    <select
+                      className={styles.formSelect}
+                      value={form.status}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, status: e.target.value }))
+                      }
+                    >
                       {STATUS_OPTIONS.filter((o) => o.value).map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown size={14} className={styles.selectChevron} />
@@ -1540,8 +1769,20 @@ useEffect(() => {
                 {formError && <p className={styles.formError}>{formError}</p>}
               </div>
               <div className={styles.modalFooter}>
-                <button type="button" className={styles.btnCancel} onClick={() => setEditUser(null)}>Cancel</button>
-                <button type="submit" className={styles.btnPrimary} disabled={submitting}>{submitting ? "Saving..." : "Save Changes"}</button>
+                <button
+                  type="button"
+                  className={styles.btnCancel}
+                  onClick={() => setEditUser(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.btnPrimary}
+                  disabled={submitting}
+                >
+                  {submitting ? "Saving..." : "Save Changes"}
+                </button>
               </div>
             </form>
           </div>
@@ -1553,19 +1794,39 @@ useEffect(() => {
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Xóa tài khoản</h2>
-              <button type="button" className={styles.modalClose} onClick={() => setDeleteUser(null)}>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setDeleteUser(null)}
+              >
                 <X size={18} />
               </button>
             </div>
             <div className={styles.modalBody}>
-              <p style={{ margin: 0, fontSize: 14, color: "var(--text-muted)" }}>
+              <p
+                style={{ margin: 0, fontSize: 14, color: "var(--text-muted)" }}
+              >
                 Bạn có chắc muốn xóa tài khoản{" "}
-                <strong style={{ color: "var(--text)" }}>{deleteUser.username}</strong> ({deleteUser.email})? Hành động này không thể hoàn tác.
+                <strong style={{ color: "var(--text)" }}>
+                  {deleteUser.username}
+                </strong>{" "}
+                ({deleteUser.email})? Hành động này không thể hoàn tác.
               </p>
             </div>
             <div className={styles.modalFooter}>
-              <button type="button" className={styles.btnCancel} onClick={() => setDeleteUser(null)}>Cancel</button>
-              <button type="button" className={styles.btnDanger} disabled={submitting} onClick={handleConfirmDelete}>
+              <button
+                type="button"
+                className={styles.btnCancel}
+                onClick={() => setDeleteUser(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.btnDanger}
+                disabled={submitting}
+                onClick={handleConfirmDelete}
+              >
                 {submitting ? "Deleting..." : "Delete"}
               </button>
             </div>
@@ -1573,10 +1834,10 @@ useEffect(() => {
         </div>
       )}
       {toast && (
-  <div className={styles.toast} role="status">
-    {toast}
-  </div>
-)}
-    </div>
+        <div className={styles.toast} role="status">
+          {toast}
+        </div>
+      )}
+    </Layout>
   );
 }

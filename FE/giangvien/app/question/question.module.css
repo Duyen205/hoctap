@@ -1,664 +1,799 @@
 .page {
-  --bg: #ffffff;
+  --bg: #f4f6fb;
   --surface: #ffffff;
-  --border: #e4e9f2;
-  --text: #14213a;
-  --text-muted: #6b7690;
-  --text-faint: #9aa4ba;
-  --accent: #2f6bff;
-  --accent-soft: #eaf0ff;
+  --surface-hover: #eef2fc;
+  --border: #e7eaf3;
+  --text: #1a2035;
+  --text-muted: #8a90a6;
+  --text-faint: #b3b8c9;
+  --accent: #2f6fed;
+  --accent-soft: #e9f0ff;
+  --success: #17a673;
+  --success-soft: rgba(23, 166, 115, 0.14);
   --danger: #ef4444;
-  --live: #16a34a;
 
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
   background: var(--bg);
-  font-family: ligatures;
-  color: var(--text);
-}
-
-.topBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 60px;
-  padding: 0 28px;
-  background: #070b1c;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  z-index: 10;
-}
-
-.topBarBrand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-
-.body {
-  display: flex;
-  flex: 1;
   min-height: 100vh;
-  width: 100%;
-}
-
-/* ---------- Sidebar ---------- */
-.sidebar {
-  width: 232px;
-  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  padding: 20px 16px;
 }
 
-.logoText {
+.page :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.mainTitleHeading {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text);
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+/* Toolbar tìm kiếm & lọc */
+.toolbarHeaderBox {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.classDropdownWrapper {
+  position: relative;
+}
+
+.dropdownButtonTrigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #ffffff;
-  white-space: nowrap;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.logoText img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-  flex-shrink: 0;
-  border: 0;
-  border-radius: 0;
-}
-.topBarActions {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-.topBarIconButton {
-  width: auto;
-  height: auto;
-  border: none;
-  background: transparent;
-  color: #ffffff;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.navMenu {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: ligatures;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.navItem:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
-
-/* Đổi giao diện active giống hình ảnh */
-.navItemActive {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.navItemActive:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.sidebarDivider {
-  margin: 10px 0;
-  border-top: 1px solid var(--border);
-}
-
-.profileBox {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 8px 4px;
-  border: none;
-  border-top: 1px solid var(--border);
-  margin-top: 8px;
-}
-
-.profileAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.profileName {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.3;
-}
-
-.profileRole {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-/* ---------- Main ---------- */
-.main {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-width: 0;
-  overflow-y: auto;
-  padding: 28px 36px 48px;
-  background: #ffffff;
-}
-
-.eyebrow {
-  margin: 0 0 6px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.headerTitle {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.headerTitleRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.panelHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.liveTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--live);
-  white-space: nowrap;
-}
-
-.liveDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--live);
-  flex-shrink: 0;
-}
-
-.sortSelect {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-muted);
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
   cursor: pointer;
-  white-space: nowrap;
 }
 
-.emptyState {
-  padding: 32px 0;
-  color: var(--text-faint);
-  text-align: center;
-  font-size: 14px;
-}
-
-/* ---------- Danh sách lớp (màn hình chưa chọn lớp — full width) ---------- */
-.classListPanel {
-  width: 100%;
-}
-
-.classGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
-}
-
-.classCard {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  text-align: left;
-  padding: 16px 18px;
+.dropdownMenuPopup {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  width: 260px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  padding: 8px;
 }
 
-.classCard:hover {
-  border-color: var(--accent);
-  box-shadow: 0 6px 18px rgba(47, 107, 255, 0.12);
-  transform: translateY(-1px);
-}
-
-.classCardTop {
+.searchBoxInDropdown {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.classCardCode {
-  margin: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  margin-bottom: 6px;
   color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
 }
 
-.classCardName {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
+.searchBoxInDropdown input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 13px;
   color: var(--text);
 }
 
-.classCardFooter {
+.dropdownScrollList {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdownOptionItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
 }
 
-.classCardCount {
-  display: inline-flex;
+.dropdownOptionItem:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.optionActive {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.searchQuestionBox {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-muted);
-  font-size: 12.5px;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 0 16px;
+  height: 44px;
+  border-radius: 10px;
+  flex: 1;
+  min-width: 240px;
+}
+
+.searchQuestionBox input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.filterChipGroup {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.filterChip {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
 }
 
-.classCardChevron {
-  color: var(--text-faint);
+.chipActive {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* ---------- Bố cục sau khi chọn 1 lớp: 1 phần trái (lớp) + 2 phần phải (gom câu hỏi) ---------- */
-.splitLayout {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-  align-items: start;
+.sortWrapper {
+  position: relative;
 }
 
-/* Danh sách lớp thu gọn, hiện dọc bên trái */
-.classListPanelCompact {
+.sortMenuPopup {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 150px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+
+.sortMenuPopup button {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.sortMenuPopup button:hover {
+  background: var(--bg);
+  color: var(--accent);
+}
+
+/* Danh sách nhóm câu hỏi (Card) */
+.groupsStackContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardWrapperContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.questionCardItemWithReply {
+  display: flex;
+  align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 18px 16px;
-  position: sticky;
-  top: 0;
-}
-
-.classListCompact {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.classCardCompact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: left;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg);
-  font: inherit;
-  color: inherit;
+  padding: 20px 24px;
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+  transition: all 0.2s ease;
+  gap: 20px;
 }
 
-.classCardCompact:hover {
+.questionCardItemWithReply:hover {
   border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(47, 111, 237, 0.1);
 }
 
-.classCardCompactActive {
-  background: var(--accent-soft);
-  border-color: var(--accent);
+.cardLeftReplyAction {
+  flex-shrink: 0;
 }
 
-.classCardCompactTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.classCardCompactCode {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.02em;
-}
-
-.classCardCompactName {
+.quickReplyBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
   font-size: 13.5px;
-  font-weight: 700;
-  color: var(--text);
+  font-weight: bold;
+  cursor: pointer;
+  transition: filter 0.15s ease;
 }
 
-.classCardCompactCount {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  color: var(--text-muted);
+.quickReplyBtn:hover {
+  filter: brightness(1.08);
 }
 
-/* Panel "Gom câu hỏi" bên phải */
-.groupingPanel {
+.cardMainContentArea {
+  flex: 1;
   min-width: 0;
 }
 
-.groupingPanelHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-}
-
-.groupingPanelActions {
+.cardHeaderFlexLine {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
-/* ---------- Group card (nhóm câu hỏi) ---------- */
-.groupList {
+.classNameChip {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.statusBadgeSmall {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.Live { background: var(--success-soft); color: var(--success); }
+.Sắpdiễnra { background: var(--accent-soft); color: var(--accent); }
+.Đãkếtthúc { background: var(--bg); color: var(--text-muted); }
+
+.topicHeaderRow {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
-.groupCard {
-  position: relative;
+.groupIndexPill {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.groupTopicTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text);
+  margin: 0;
+}
+
+.metaRowInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.answeredStatusPill { color: var(--success); font-weight: 600; }
+.notAnsweredStatusPill { color: #f97316; font-weight: bold; }
+.timeMetaText { color: var(--text-faint); margin-left: auto; font-size: 12px; }
+
+/* Khung Inline Reply ngay dưới card */
+.inlineReplyBoxDirect {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 18px 20px;
+  margin-left: 92px;
+  padding: 6px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
 }
 
-.groupBadge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--danger);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
+.replyBoxHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: 2px solid var(--surface);
-}
-
-.groupTopRow {
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  padding: 12px 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
-.groupHeadingLine {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 4px;
-}
-
-.liveMiniPill {
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
-  background: var(--danger);
-  padding: 1px 7px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-}
-
-.answeredPill {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--live);
-  background: #e8f8ef;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-.groupTopic {
-  font-size: 16px;
-  font-weight: 700;
+.replyBoxTitle {
+  font-size: 13.5px;
+  font-weight: bold;
   color: var(--text);
-  margin: 0 0 4px;
 }
 
-.groupMeta {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.groupActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.btnOutline {
+.langSwitchGroup {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
   font-size: 13px;
   font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
 }
 
-.btnOutline:hover {
-  background: var(--bg);
-}
-
-.btnPrimary {
-  padding: 8px 16px;
-  border-radius: 8px;
+.langBtn {
+  background: transparent;
   border: none;
-  background: var(--accent);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--text-muted);
   cursor: pointer;
+  padding: 2px 6px;
 }
 
-.btnPrimary:hover {
-  filter: brightness(1.05);
-}
-
-.btnPrimary:disabled,
-.btnOutline:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.questionBullets {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.questionBullets li {
-  display: flex;
-  gap: 8px;
-  font-size: 13.5px;
-  color: var(--text-muted);
-}
-
-.bulletDot {
+.langActive {
   color: var(--accent);
-  flex-shrink: 0;
+  font-weight: bold;
+  text-decoration: underline;
 }
 
-.rawStudentName {
+.langDivider {
   color: var(--text-faint);
-  font-size: 12px;
-  margin-left: 6px;
 }
 
-/* ---------- Reply composer ---------- */
-.replyBox {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--border);
+.replyBoxBody {
+  padding: 16px 18px;
 }
 
-.replyLabel {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.replyTextarea {
+.replyTextareaField {
   width: 100%;
-  min-height: 76px;
-  resize: vertical;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 13.5px;
-  font-family: inherit;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
   color: var(--text);
   outline: none;
+  resize: vertical;
+  background: var(--bg);
+  box-sizing: border-box;
 }
 
-.replyTextarea:focus {
+.replyTextareaField:focus {
   border-color: var(--accent);
 }
 
-.replyFooter {
+.replyBoxFooter {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.replyHint {
+.footerLeftOptions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.attachFileButtonLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.attachFileButtonLabel:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.optionalBadgeText {
   font-size: 12px;
   color: var(--text-faint);
 }
 
-.replyFooterActions {
+.checkboxLabelFlex {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxLabelFlex input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.footerRightButtons {
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Trang chi tiết xem câu hỏi con */
+.detailViewContainerStandard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+}
+
+.detailTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+}
+
+.detailTopBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.groupBadgePill {
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.classSourceChip {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.answeredPill {
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.unansweredPill {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.detailHeadingTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 0 16px;
+  color: var(--text);
+}
+
+.repQuestionHighlightBox {
+  background: var(--accent-soft);
+  border: 1px solid #bfdbfe;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.repHeaderFlex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.repLabelSmall {
+  font-size: 11.5px;
+  font-weight: bold;
+  color: #1d4ed8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.aiGlowBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #2563eb;
+  background: #dbeafe;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.repTextContent {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1e3a8a;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.contentSectionBox {
+  margin-bottom: 20px;
+}
+
+.sectionHeadingText {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.rawCardsListVertical {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.sentNotice {
-  margin-top: 12px;
-  padding: 10px 12px;
+.rawQuestionCardItem {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 14px 18px;
   border-radius: 10px;
-  background: #e8f8ef;
-  color: var(--live);
-  font-size: 13px;
-  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 900px) {
-  .splitLayout {
-    grid-template-columns: 1fr;
-  }
-  .classListPanelCompact {
-    position: static;
-  }
-  .classListCompact {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .classCardCompact {
-    flex: 1 1 200px;
-  }
+.rawQuestionText {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.timeText {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.reviewedAnswerCard {
+  background: var(--success-soft);
+  border: 1px solid rgba(23, 166, 115, 0.3);
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reviewedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reviewedTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: bold;
+  color: var(--success);
+}
+
+.editBtnInline {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--success);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.editBtnInline:hover {
+  background: var(--surface-hover);
+}
+
+.reviewedBodyText {
+  font-size: 13.5px;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.replyBoxWrapperStandard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+  overflow: hidden;
+}
+
+/* Dialog & Toast */
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 11, 28, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmDialogBox {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
+}
+
+.dialogTitle {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.dialogDesc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.successToastAlert {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14.5px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2000;
+}
+
+.primaryActionButton {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primaryActionButton:disabled { opacity: 0.5; }
+
+.secondaryOutlineBtn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.secondaryOutlineBtn:hover {
+  background: var(--surface-hover);
+}
+
+.emptyCardBox {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-faint);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
 }
